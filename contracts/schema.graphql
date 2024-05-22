@@ -1,0 +1,59 @@
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  creator: User!
+  createdAt: Timestamp!
+  content: String!
+  allowComments: Boolean! @hasRole(role: OWNER)
+  comments(limit: Int = 25, offset: Int = 0): [Comment!]!
+}
+
+type Comment {
+  id: ID!
+  author: User!
+  createdAt: Timestamp!
+  likes: Int!
+  content: String!
+  answers(limit: Int = 5, offset: Int = 0): [Comment!]!
+}
+
+type Query {
+  Post(id: ID!): Post
+  Posts(limit: Int = 10, offset: Int = 0): [Post!]!
+
+  Comment(id: ID!): Comment
+  CommentsForPost(postId: ID!): [Comment!]!
+}
+
+type Mutation {
+  createPost(post: PostInput!): Post!
+
+  createComment(postId: ID!, comment: CommentInput!): Comment!
+}
+
+input PostInput {
+  title: String!
+  creator: User!
+  content: String!
+  allowComments: Boolean!
+}
+
+input CommentInput {
+  author: User!
+  content: String!
+}
+
+scalar Timestamp
+
+directive @hasRole(role: Role!) on FIELD_DEFINITION
+
+enum Role {
+  ADMIN
+  OWNER
+}
