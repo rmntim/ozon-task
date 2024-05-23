@@ -2,8 +2,8 @@ package storage
 
 import (
 	"fmt"
-	"github.com/rmntim/ozon-task/intenal/config"
-	"github.com/rmntim/ozon-task/intenal/storage/postgres"
+	"github.com/rmntim/ozon-task/internal/config"
+	"github.com/rmntim/ozon-task/internal/storage/postgres"
 )
 
 type Storage interface {
