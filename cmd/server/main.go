@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/rmntim/ozon-task/intenal/config"
+)
 
 func main() {
-	fmt.Println("foobar")
+	cfg, dbCfg := config.MustLoad()
+
+	fmt.Println(cfg)
+	fmt.Println(dbCfg)
 }
