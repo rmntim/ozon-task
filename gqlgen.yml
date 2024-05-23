@@ -17,5 +17,7 @@ resolver:
 models:
   ID:
     model:
-      - github.com/99designs/gqlgen/graphql.IntID
-      - github.com/99designs/gqlgen/graphql.ID
+      - github.com/99designs/gqlgen/graphql.UIntID
+  Timestamp:
+    model:
+      - github.com/rmntim/ozon-task/internal/lib/graph/timestamp.Timestamp
