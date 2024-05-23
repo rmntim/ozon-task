@@ -1,59 +1,60 @@
 type User {
-  id: ID!
-  name: String!
-  email: String!
+    id: ID!
+    username: String!
+    email: String!
+    posts: [Post!]!
 }
 
 type Post {
-  id: ID!
-  title: String!
-  creator: User!
-  createdAt: Timestamp!
-  content: String!
-  allowComments: Boolean! @hasRole(role: OWNER)
-  comments(limit: Int = 25, offset: Int = 0): [Comment!]!
+    id: ID!
+    title: String!
+    content: String!
+    author: User!
+    comments: [Comment!]!
 }
 
 type Comment {
-  id: ID!
-  author: User!
-  createdAt: Timestamp!
-  likes: Int!
-  content: String!
-  answers(limit: Int = 5, offset: Int = 0): [Comment!]!
+    id: ID!
+    content: String!
+    author: User!
+    post: Post!
+    parentComment: Comment
+    replies: [Comment!]!
 }
 
 type Query {
-  post(id: ID!): Post
-  posts(limit: Int = 10, offset: Int = 0): [Post!]!
-
-  comment(id: ID!): Comment
-  commentsForPost(postId: ID!): [Comment!]!
+    # Fetch a user by ID
+    user(id: ID!): User
+    # Fetch all users
+    users: [User!]!
+    # Fetch a post by ID
+    post(id: ID!): Post
+    # Fetch all posts
+    posts: [Post!]!
+    # Fetch a comment by ID
+    comment(id: ID!): Comment
+    # Fetch all comments
+    comments: [Comment!]!
 }
 
 type Mutation {
-  createPost(post: PostInput!): Post!
-
-  createComment(postId: ID!, comment: CommentInput!): Comment!
+    # Create a new user
+    createUser(username: String!, email: String!): User
+    # Create a new post
+    createPost(title: String!, content: String!, authorId: ID!): Post
+    # Create a new comment
+    createComment(content: String!, authorId: ID!, postId: ID!, parentCommentId: ID): Comment
 }
 
-input PostInput {
-  title: String!
-  creatorId: ID!
-  content: String!
-  allowComments: Boolean!
+type Subscription {
+    # Subscription for new posts
+    postAdded: Post
+    # Subscription for new comments
+    commentAdded(postId: ID): Comment
 }
 
-input CommentInput {
-  authorId: ID!
-  content: String!
-}
-
-scalar Timestamp
-
-directive @hasRole(role: Role!) on FIELD_DEFINITION
-
-enum Role {
-  ADMIN
-  OWNER
+schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
 }
