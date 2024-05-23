@@ -1,11 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/rmntim/ozon-task/graph"
 	"github.com/rmntim/ozon-task/intenal/config"
 	"github.com/rmntim/ozon-task/intenal/lib/logger/sl"
 	"github.com/rmntim/ozon-task/intenal/storage"
 	"log/slog"
+	"net/http"
 	"os"
 )
 
@@ -27,7 +30,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(db)
+	_ = db
+
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+		Resolvers: &graph.Resolver{},
+	}))
+
+	http.Handle("/", playground.Handler("Todo", "/query"))
+	http.Handle("/query", srv)
+
+	if err := http.ListenAndServe(cfg.Server.Address, nil); err != nil {
+		log.Error("failed to start server", sl.Err(err))
+		os.Exit(1)
+	}
+
+	log.Info("server stopped")
 }
 
 func setupLogger(env string) *slog.Logger {
