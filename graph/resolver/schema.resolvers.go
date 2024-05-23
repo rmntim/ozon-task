@@ -6,54 +6,44 @@ package resolver
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
-	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
 	"github.com/rmntim/ozon-task/graph/model"
 )
 
-var (
-	ErrInternal = errors.New("internal server error")
-)
+// CreateUser is the resolver for the createUser field.
+func (r *mutationResolver) CreateUser(ctx context.Context, username string, email string) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
+}
 
 // CreatePost is the resolver for the createPost field.
-func (r *mutationResolver) CreatePost(ctx context.Context, post model.PostInput) (*model.Post, error) {
-	const op = "resolver.CreatePost"
-	newPost, err := r.db.CreatePost(ctx, post)
-	if err != nil {
-		r.log.Error("internal server error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
-	}
-	return newPost, nil
+func (r *mutationResolver) CreatePost(ctx context.Context, title string, content string, authorID int) (*model.Post, error) {
+	panic(fmt.Errorf("not implemented: CreatePost - createPost"))
 }
 
 // CreateComment is the resolver for the createComment field.
-func (r *mutationResolver) CreateComment(ctx context.Context, postID int, comment model.CommentInput) (*model.Comment, error) {
-	const op = "resolver.CreateComment"
-	newComment, err := r.db.CreateComment(ctx, postID, comment)
-	if err != nil {
-		r.log.Error("internal server error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
-	}
-	return newComment, nil
+func (r *mutationResolver) CreateComment(ctx context.Context, content string, authorID int, postID int, parentCommentID *int) (*model.Comment, error) {
+	panic(fmt.Errorf("not implemented: CreateComment - createComment"))
+}
+
+// User is the resolver for the user field.
+func (r *queryResolver) User(ctx context.Context, id int) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: User - user"))
+}
+
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented: Users - users"))
 }
 
 // Post is the resolver for the post field.
 func (r *queryResolver) Post(ctx context.Context, id int) (*model.Post, error) {
-	const op = "resolver.Post"
-	post, err := r.db.GetPostById(ctx, id)
-	if err != nil {
-		r.log.Error("internal server error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
-	}
-	return post, nil
+	panic(fmt.Errorf("not implemented: Post - post"))
 }
 
 // Posts is the resolver for the posts field.
-func (r *queryResolver) Posts(ctx context.Context, limit *int, offset *int) ([]*model.Post, error) {
+func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 	panic(fmt.Errorf("not implemented: Posts - posts"))
 }
 
@@ -62,9 +52,19 @@ func (r *queryResolver) Comment(ctx context.Context, id int) (*model.Comment, er
 	panic(fmt.Errorf("not implemented: Comment - comment"))
 }
 
-// CommentsForPost is the resolver for the commentsForPost field.
-func (r *queryResolver) CommentsForPost(ctx context.Context, postID int) ([]*model.Comment, error) {
-	panic(fmt.Errorf("not implemented: CommentsForPost - commentsForPost"))
+// Comments is the resolver for the comments field.
+func (r *queryResolver) Comments(ctx context.Context) ([]*model.Comment, error) {
+	panic(fmt.Errorf("not implemented: Comments - comments"))
+}
+
+// PostAdded is the resolver for the postAdded field.
+func (r *subscriptionResolver) PostAdded(ctx context.Context) (<-chan *model.Post, error) {
+	panic(fmt.Errorf("not implemented: PostAdded - postAdded"))
+}
+
+// CommentAdded is the resolver for the commentAdded field.
+func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID *int) (<-chan *model.Comment, error) {
+	panic(fmt.Errorf("not implemented: CommentAdded - commentAdded"))
 }
 
 // Mutation returns graph.MutationResolver implementation.
@@ -73,5 +73,9 @@ func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
+// Subscription returns graph.SubscriptionResolver implementation.
+func (r *Resolver) Subscription() graph.SubscriptionResolver { return &subscriptionResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type subscriptionResolver struct{ *Resolver }

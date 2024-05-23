@@ -1,10 +1,7 @@
 package main
 
 import (
-	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/rmntim/ozon-task/graph"
-	"github.com/rmntim/ozon-task/graph/resolver"
 	"github.com/rmntim/ozon-task/internal/config"
 	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
 	"github.com/rmntim/ozon-task/internal/storage"
@@ -25,19 +22,19 @@ func main() {
 	log.Info("starting server", slog.String("env", cfg.Env))
 	log.Debug("debug messages are enabled")
 
-	db, err := storage.New(cfg.Storage, dbCfg)
+	_, err := storage.New(cfg.Storage, dbCfg)
 	if err != nil {
 		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)
 	}
 
-	gqlHandler := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: resolver.New(db, log),
-	}))
+	//gqlHandler := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+	//	Resolvers: resolver.New(db, log),
+	//}))
 
 	mux := http.NewServeMux()
 	mux.Handle("/", playground.Handler("Ozon Task", "/query"))
-	mux.Handle("/query", gqlHandler)
+	//mux.Handle("/query", gqlHandler)
 
 	srv := &http.Server{
 		Addr:         cfg.Server.Address,

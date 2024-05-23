@@ -1,27 +1,32 @@
-CREATE TABLE IF NOT EXISTS users
+CREATE TABLE users
 (
     id            SERIAL PRIMARY KEY,
-    username      VARCHAR(50) UNIQUE NOT NULL,
-    email         VARCHAR(50) UNIQUE NOT NULL,
-    password_hash bytea              NOT NULL
+    username      VARCHAR(50)  NOT NULL UNIQUE,
+    email         VARCHAR(100) NOT NULL UNIQUE,
+    password_hash bytea        NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS posts
+CREATE TABLE posts
 (
-    id             SERIAL PRIMARY KEY,
-    title          VARCHAR(50) UNIQUE NOT NULL,
-    creator_id     INT                NOT NULL REFERENCES users,
-    created_at     TIMESTAMPTZ        NOT NULL DEFAULT NOW(),
-    content        TEXT               NOT NULL,
-    allow_comments BOOLEAN            NOT NULL
+    id        SERIAL PRIMARY KEY,
+    title     VARCHAR(255) NOT NULL,
+    content   TEXT         NOT NULL,
+    author_id INTEGER      NOT NULL,
+    FOREIGN KEY (author_id) REFERENCES users
 );
 
-CREATE TABLE IF NOT EXISTS comments
+CREATE TABLE comments
 (
     id                SERIAL PRIMARY KEY,
-    author_id         INT         NOT NULL REFERENCES users,
-    created_at        TIMESTAMPTZ NOT NULL                      DEFAULT NOW(),
-    content           TEXT        NOT NULL,
-    post_id           INT         NOT NULL REFERENCES posts ON DELETE CASCADE,
-    parent_comment_id INT REFERENCES comments ON DELETE CASCADE DEFAULT NULL
+    content           TEXT    NOT NULL,
+    author_id         INTEGER NOT NULL,
+    post_id           INTEGER NOT NULL,
+    parent_comment_id INTEGER,
+    FOREIGN KEY (author_id) REFERENCES users,
+    FOREIGN KEY (post_id) REFERENCES posts,
+    FOREIGN KEY (parent_comment_id) REFERENCES comments
 );
+
+CREATE INDEX idx_author_id ON posts (author_id);
+CREATE INDEX idx_post_id ON comments (post_id);
+CREATE INDEX idx_parent_comment_id ON comments (parent_comment_id);

@@ -2,92 +2,35 @@
 
 package model
 
-import (
-	"fmt"
-	"io"
-	"strconv"
-)
-
 type Comment struct {
-	ID        int        `json:"id"`
-	Author    *User      `json:"author"`
-	CreatedAt string     `json:"createdAt"`
-	Likes     int        `json:"likes"`
-	Content   string     `json:"content"`
-	Answers   []*Comment `json:"answers"`
-}
-
-type CommentInput struct {
-	AuthorID int    `json:"authorId"`
-	Content  string `json:"content"`
+	ID            int        `json:"id"`
+	Content       string     `json:"content"`
+	Author        *User      `json:"author"`
+	Post          *Post      `json:"post"`
+	ParentComment *Comment   `json:"parentComment,omitempty"`
+	Replies       []*Comment `json:"replies"`
 }
 
 type Mutation struct {
 }
 
 type Post struct {
-	ID            int        `json:"id"`
-	Title         string     `json:"title"`
-	Creator       *User      `json:"creator"`
-	CreatedAt     string     `json:"createdAt"`
-	Content       string     `json:"content"`
-	AllowComments bool       `json:"allowComments"`
-	Comments      []*Comment `json:"comments"`
-}
-
-type PostInput struct {
-	Title         string `json:"title"`
-	CreatorID     int    `json:"creatorId"`
-	Content       string `json:"content"`
-	AllowComments bool   `json:"allowComments"`
+	ID       int        `json:"id"`
+	Title    string     `json:"title"`
+	Content  string     `json:"content"`
+	Author   *User      `json:"author"`
+	Comments []*Comment `json:"comments"`
 }
 
 type Query struct {
 }
 
+type Subscription struct {
+}
+
 type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
-type Role string
-
-const (
-	RoleAdmin Role = "ADMIN"
-	RoleOwner Role = "OWNER"
-)
-
-var AllRole = []Role{
-	RoleAdmin,
-	RoleOwner,
-}
-
-func (e Role) IsValid() bool {
-	switch e {
-	case RoleAdmin, RoleOwner:
-		return true
-	}
-	return false
-}
-
-func (e Role) String() string {
-	return string(e)
-}
-
-func (e *Role) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = Role(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid Role", str)
-	}
-	return nil
-}
-
-func (e Role) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
+	ID       int     `json:"id"`
+	Username string  `json:"username"`
+	Email    string  `json:"email"`
+	Posts    []*Post `json:"posts"`
 }
