@@ -6,10 +6,17 @@ package resolver
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
+	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
 	"github.com/rmntim/ozon-task/graph/model"
+)
+
+var (
+	ErrInternal = errors.New("internal server error")
 )
 
 // CreatePost is the resolver for the createPost field.
@@ -27,7 +34,8 @@ func (r *queryResolver) Post(ctx context.Context, id int) (*model.Post, error) {
 	const op = "resolver.Post"
 	post, err := r.db.GetPostById(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		r.log.Error("internal server error", slog.String("op", op), sl.Err(err))
+		return nil, ErrInternal
 	}
 	return post, nil
 }

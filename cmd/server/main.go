@@ -32,7 +32,7 @@ func main() {
 	}
 
 	gqlHandler := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: resolver.New(db),
+		Resolvers: resolver.New(db, log),
 	}))
 
 	mux := http.NewServeMux()
