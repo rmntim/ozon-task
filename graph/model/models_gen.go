@@ -2,10 +2,15 @@
 
 package model
 
+import (
+	"time"
+)
+
 type Comment struct {
-	ID            int        `json:"id"`
+	ID            uint       `json:"id"`
 	Content       string     `json:"content"`
 	Author        *User      `json:"author"`
+	CreatedAt     time.Time  `json:"createdAt"`
 	Post          *Post      `json:"post"`
 	ParentComment *Comment   `json:"parentComment,omitempty"`
 	Replies       []*Comment `json:"replies"`
@@ -15,11 +20,12 @@ type Mutation struct {
 }
 
 type Post struct {
-	ID       int        `json:"id"`
-	Title    string     `json:"title"`
-	Content  string     `json:"content"`
-	Author   *User      `json:"author"`
-	Comments []*Comment `json:"comments"`
+	ID        uint       `json:"id"`
+	Title     string     `json:"title"`
+	CreatedAt time.Time  `json:"createdAt"`
+	Content   string     `json:"content"`
+	Author    *User      `json:"author"`
+	Comments  []*Comment `json:"comments"`
 }
 
 type Query struct {
@@ -29,7 +35,7 @@ type Subscription struct {
 }
 
 type User struct {
-	ID       int     `json:"id"`
+	ID       uint    `json:"id"`
 	Username string  `json:"username"`
 	Email    string  `json:"email"`
 	Posts    []*Post `json:"posts"`
