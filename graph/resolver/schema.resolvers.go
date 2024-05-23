@@ -24,7 +24,12 @@ func (r *mutationResolver) CreateComment(ctx context.Context, postID int, commen
 
 // Post is the resolver for the post field.
 func (r *queryResolver) Post(ctx context.Context, id int) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented: Post - post"))
+	const op = "resolver.Post"
+	post, err := r.db.GetPostById(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return post, nil
 }
 
 // Posts is the resolver for the posts field.

@@ -1,12 +1,15 @@
 package storage
 
 import (
+	"context"
 	"fmt"
+	"github.com/rmntim/ozon-task/graph/model"
 	"github.com/rmntim/ozon-task/internal/config"
 	"github.com/rmntim/ozon-task/internal/storage/postgres"
 )
 
 type Storage interface {
+	GetPostById(ctx context.Context, id int) (*model.Post, error)
 }
 
 // New creates new storage instance, depending on storage type.
@@ -25,6 +28,5 @@ func New(storageType string, dbCfg *config.DBConfig) (Storage, error) {
 		// TODO: improve memory storage
 		panic("unimplemented")
 	}
-
 	return nil, fmt.Errorf("unknown storage type: %s", storageType)
 }
