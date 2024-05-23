@@ -21,24 +21,24 @@ func (r *mutationResolver) CreateComment(ctx context.Context, postID int, commen
 	panic(fmt.Errorf("not implemented: CreateComment - createComment"))
 }
 
-// Post is the resolver for the Post field.
+// Post is the resolver for the post field.
 func (r *queryResolver) Post(ctx context.Context, id int) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented: Post - Post"))
+	panic(fmt.Errorf("not implemented: Post - post"))
 }
 
-// Posts is the resolver for the Posts field.
+// Posts is the resolver for the posts field.
 func (r *queryResolver) Posts(ctx context.Context, limit *int, offset *int) ([]*model.Post, error) {
-	panic(fmt.Errorf("not implemented: Posts - Posts"))
+	panic(fmt.Errorf("not implemented: Posts - posts"))
 }
 
-// Comment is the resolver for the Comment field.
+// Comment is the resolver for the comment field.
 func (r *queryResolver) Comment(ctx context.Context, id int) (*model.Comment, error) {
-	panic(fmt.Errorf("not implemented: Comment - Comment"))
+	panic(fmt.Errorf("not implemented: Comment - comment"))
 }
 
-// CommentsForPost is the resolver for the CommentsForPost field.
+// CommentsForPost is the resolver for the commentsForPost field.
 func (r *queryResolver) CommentsForPost(ctx context.Context, postID int) ([]*model.Comment, error) {
-	panic(fmt.Errorf("not implemented: CommentsForPost - CommentsForPost"))
+	panic(fmt.Errorf("not implemented: CommentsForPost - commentsForPost"))
 }
 
 // Mutation returns MutationResolver implementation.

@@ -5,6 +5,7 @@ package graph
 import (
 	"bytes"
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"strconv"
@@ -415,67 +416,19 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
+//go:embed "schema.graphql"
+var sourcesFS embed.FS
+
+func sourceData(filename string) string {
+	data, err := sourcesFS.ReadFile(filename)
+	if err != nil {
+		panic(fmt.Sprintf("codegen problem: %s not available", filename))
+	}
+	return string(data)
+}
+
 var sources = []*ast.Source{
-	{Name: "../contracts/schema.graphql", Input: `type User {
-  id: ID!
-  name: String!
-  email: String!
-}
-
-type Post {
-  id: ID!
-  title: String!
-  creator: User!
-  createdAt: Timestamp!
-  content: String!
-  allowComments: Boolean! @hasRole(role: OWNER)
-  comments(limit: Int = 25, offset: Int = 0): [Comment!]!
-}
-
-type Comment {
-  id: ID!
-  author: User!
-  createdAt: Timestamp!
-  likes: Int!
-  content: String!
-  answers(limit: Int = 5, offset: Int = 0): [Comment!]!
-}
-
-type Query {
-  post(id: ID!): Post
-  posts(limit: Int = 10, offset: Int = 0): [Post!]!
-
-  comment(id: ID!): Comment
-  commentsForPost(postId: ID!): [Comment!]!
-}
-
-type Mutation {
-  createPost(post: PostInput!): Post!
-
-  createComment(postId: ID!, comment: CommentInput!): Comment!
-}
-
-input PostInput {
-  title: String!
-  creatorId: ID!
-  content: String!
-  allowComments: Boolean!
-}
-
-input CommentInput {
-  authorId: ID!
-  content: String!
-}
-
-scalar Timestamp
-
-directive @hasRole(role: Role!) on FIELD_DEFINITION
-
-enum Role {
-  ADMIN
-  OWNER
-}
-`, BuiltIn: false},
+	{Name: "schema.graphql", Input: sourceData("schema.graphql"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
