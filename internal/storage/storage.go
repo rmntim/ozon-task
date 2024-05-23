@@ -10,6 +10,7 @@ import (
 
 type Storage interface {
 	GetPostById(ctx context.Context, id int) (*model.Post, error)
+	CreatePost(ctx context.Context, post model.PostInput) (*model.Post, error)
 }
 
 // New creates new storage instance, depending on storage type.

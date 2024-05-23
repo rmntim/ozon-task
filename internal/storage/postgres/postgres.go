@@ -103,3 +103,18 @@ func (s *Storage) GetPostById(ctx context.Context, id int) (*model.Post, error) 
 
 	return &post, nil
 }
+
+func (s *Storage) CreatePost(ctx context.Context, post model.PostInput) (*model.Post, error) {
+	const op = "storage.postgres.CreatePost"
+
+	var id int
+	if err := s.db.QueryRowContext(ctx, `
+		INSERT INTO posts (title, creator_id, content, allow_comments)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id
+	`, post.Title, post.CreatorID, post.Content, post.AllowComments).Scan(&id); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return s.GetPostById(ctx, id)
+}
