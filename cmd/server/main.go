@@ -32,14 +32,23 @@ func main() {
 
 	_ = db
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
+	gqlHandler := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &graph.Resolver{},
 	}))
 
-	http.Handle("/", playground.Handler("Todo", "/query"))
-	http.Handle("/query", srv)
+	mux := http.NewServeMux()
+	mux.Handle("/", playground.Handler("ozon", "/query"))
+	mux.Handle("/query", gqlHandler)
 
-	if err := http.ListenAndServe(cfg.Server.Address, nil); err != nil {
+	srv := &http.Server{
+		Addr:         cfg.Server.Address,
+		Handler:      mux,
+		WriteTimeout: cfg.Server.Timeout,
+		ReadTimeout:  cfg.Server.Timeout,
+		IdleTimeout:  cfg.Server.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
 		log.Error("failed to start server", sl.Err(err))
 		os.Exit(1)
 	}
