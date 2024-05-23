@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/rmntim/ozon-task/intenal/config"
 	"github.com/rmntim/ozon-task/intenal/lib/logger/sl"
-	"github.com/rmntim/ozon-task/intenal/storage/postgres"
+	"github.com/rmntim/ozon-task/intenal/storage"
 	"log/slog"
 	"os"
-
-	"github.com/rmntim/ozon-task/intenal/config"
 )
 
 const (
@@ -22,13 +21,13 @@ func main() {
 	log.Info("starting server", slog.String("env", cfg.Env))
 	log.Debug("debug messages are enabled")
 
-	storage, err := postgres.New(dbCfg.Username, dbCfg.Password, dbCfg.Address, dbCfg.Database)
+	db, err := storage.New(cfg.Storage, dbCfg)
 	if err != nil {
 		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)
 	}
 
-	fmt.Println(storage)
+	fmt.Println(db)
 }
 
 func setupLogger(env string) *slog.Logger {
