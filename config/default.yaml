@@ -1,3 +1,4 @@
+env: local # or `prod`
 storage: postgres # or `memory`
 http_server:
   address: "0.0.0.0:8080"

@@ -6,6 +6,11 @@ import (
 	"github.com/rmntim/ozon-task/intenal/config"
 )
 
+const (
+	envLocal = "local"
+	envProd  = "prod"
+)
+
 func main() {
 	cfg, dbCfg := config.MustLoad()
 

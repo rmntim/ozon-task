@@ -11,6 +11,7 @@ import (
 )
 
 type Config struct {
+	Env     string           `yaml:"env" env-required:"true"`
 	Storage string           `yaml:"storage" env-required:"true"`
 	Server  HTTPServerConfig `yaml:"http_server"`
 }
