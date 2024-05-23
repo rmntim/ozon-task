@@ -24,11 +24,11 @@ type Comment {
 }
 
 type Query {
-  Post(id: ID!): Post
-  Posts(limit: Int = 10, offset: Int = 0): [Post!]!
+  post(id: ID!): Post
+  posts(limit: Int = 10, offset: Int = 0): [Post!]!
 
-  Comment(id: ID!): Comment
-  CommentsForPost(postId: ID!): [Comment!]!
+  comment(id: ID!): Comment
+  commentsForPost(postId: ID!): [Comment!]!
 }
 
 type Mutation {
@@ -39,13 +39,13 @@ type Mutation {
 
 input PostInput {
   title: String!
-  creator: User!
+  creatorId: ID!
   content: String!
   allowComments: Boolean!
 }
 
 input CommentInput {
-  author: User!
+  authorId: ID!
   content: String!
 }
 
