@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
@@ -8,6 +9,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/rmntim/ozon-task/graph/model"
 )
 
 type Storage struct {
@@ -59,75 +61,7 @@ func (s *Storage) Migrate() error {
 	return nil
 }
 
-//func (s *Storage) GetPostById(ctx context.Context, id int) (*model.Post, error) {
-//	const op = "storage.postgres.GetPostById"
-//
-//	stmt, err := s.db.PrepareContext(ctx, `
-//					SELECT p.id,
-//       					   p.title,
-//       					   u.id,
-//       					   u.username,
-//       					   u.email,
-//       					   p.created_at,
-//       					   p.content,
-//       					   p.allow_comments
-//					FROM posts p
-//         				JOIN users u ON p.creator_id = u.id
-//					WHERE p.id = $1`)
-//	if err != nil {
-//		return nil, fmt.Errorf("%s: %w", op, err)
-//	}
-//	defer stmt.Close()
-//
-//	rows, err := stmt.QueryContext(ctx, id)
-//	if err != nil {
-//		return nil, fmt.Errorf("%s: %w", op, err)
-//	}
-//	defer rows.Close()
-//
-//	if !rows.Next() {
-//		return nil, fmt.Errorf("%s: %w", op, err)
-//	}
-//
-//	var post model.Post
-//	// Imagine using ptrs as default
-//	post.Creator = &model.User{}
-//	if err := rows.Scan(&post.ID, &post.Title,
-//		&post.Creator.ID, &post.Creator.Name, &post.Creator.Email,
-//		&post.CreatedAt, &post.Content, &post.AllowComments); err != nil {
-//		return nil, fmt.Errorf("%s: %w", op, err)
-//	}
-//	post.Comments = make([]*model.Comment, 0)
-//
-//	return &post, nil
-//}
-//
-//func (s *Storage) CreatePost(ctx context.Context, post model.PostInput) (*model.Post, error) {
-//	const op = "storage.postgres.CreatePost"
-//
-//	var id int
-//	if err := s.db.QueryRowContext(ctx, `
-//		INSERT INTO posts (title, creator_id, content, allow_comments)
-//		VALUES ($1, $2, $3, $4)
-//		RETURNING id
-//	`, post.Title, post.CreatorID, post.Content, post.AllowComments).Scan(&id); err != nil {
-//		return nil, fmt.Errorf("%s: %w", op, err)
-//	}
-//
-//	return s.GetPostById(ctx, id)
-//}
-//
-//func (s *Storage) CreateComment(ctx context.Context, postID int, comment model.CommentInput) (*model.Comment, error) {
-//	const op = "storage.postgres.CreateComment"
-//
-//	var id int
-//	if err := s.db.QueryRowContext(ctx, `
-//		INSERT INTO comments (author_id, post_id, content, parent_comment_id)
-//		VALUES ($1, $2, $3, $4)
-//		RETURNING id
-//	`, comment.AuthorID, postID, comment.Content, comment.ParentCommentID).Scan(&id); err != nil {
-//		return nil, fmt.Errorf("%s: %w", op, err)
-//	}
-//
-//	return s.GetCommentById(ctx, id)
-//}
+func (s *Storage) CreateUser(ctx context.Context, username string, email string, password string) (*model.User, error) {
+	//TODO implement me
+	panic("implement me")
+}
