@@ -1,4 +1,4 @@
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id            SERIAL PRIMARY KEY,
     username      VARCHAR(50)  NOT NULL UNIQUE,
@@ -6,7 +6,7 @@ CREATE TABLE users
     password_hash bytea        NOT NULL
 );
 
-CREATE TABLE posts
+CREATE TABLE IF NOT EXISTS posts
 (
     id        SERIAL PRIMARY KEY,
     title     VARCHAR(255) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE posts
     FOREIGN KEY (author_id) REFERENCES users
 );
 
-CREATE TABLE comments
+CREATE TABLE IF NOT EXISTS comments
 (
     id                SERIAL PRIMARY KEY,
     content           TEXT    NOT NULL,
