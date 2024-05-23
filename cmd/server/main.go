@@ -4,6 +4,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/rmntim/ozon-task/graph"
+	"github.com/rmntim/ozon-task/graph/resolver"
 	"github.com/rmntim/ozon-task/internal/config"
 	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
 	"github.com/rmntim/ozon-task/internal/storage"
@@ -33,7 +34,7 @@ func main() {
 	_ = db
 
 	gqlHandler := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &graph.Resolver{},
+		Resolvers: &resolver.Resolver{},
 	}))
 
 	mux := http.NewServeMux()

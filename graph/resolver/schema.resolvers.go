@@ -1,4 +1,4 @@
-package graph
+package resolver
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/rmntim/ozon-task/graph"
 	"github.com/rmntim/ozon-task/graph/model"
 )
 
@@ -41,11 +42,11 @@ func (r *queryResolver) CommentsForPost(ctx context.Context, postID int) ([]*mod
 	panic(fmt.Errorf("not implemented: CommentsForPost - commentsForPost"))
 }
 
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+// Mutation returns graph.MutationResolver implementation.
+func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+// Query returns graph.QueryResolver implementation.
+func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
