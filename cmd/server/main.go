@@ -31,14 +31,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	_ = db
-
 	gqlHandler := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &resolver.Resolver{},
+		Resolvers: resolver.New(db),
 	}))
 
 	mux := http.NewServeMux()
-	mux.Handle("/", playground.Handler("ozon", "/query"))
+	mux.Handle("/", playground.Handler("Ozon Task", "/query"))
 	mux.Handle("/query", gqlHandler)
 
 	srv := &http.Server{
