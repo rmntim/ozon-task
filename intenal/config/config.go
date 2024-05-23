@@ -20,6 +20,7 @@ type DBConfig struct {
 	Username string `env:"DATABASE_USER" env-required:"true"`
 	Password string `env:"DATABASE_PASSWORD" env-required:"true"`
 	Database string `env:"DATABASE_NAME" env-required:"true"`
+	Address  string `env:"DATABASE_ADDRESS" env-required:"true"`
 }
 
 type HTTPServerConfig struct {
