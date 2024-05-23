@@ -1,7 +1,11 @@
 package postgres
 
 import (
+	"errors"
 	"fmt"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -27,4 +31,30 @@ func New(username, password, address, database string) (*Storage, error) {
 	}
 
 	return &Storage{db: db}, nil
+}
+
+// Migrate runs migrations.
+func (s *Storage) Migrate() error {
+	const op = "storage.postgres.Migrate"
+
+	driver, err := postgres.WithInstance(s.db.DB, &postgres.Config{})
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://migrations/postgres",
+		"postgres",
+		driver,
+	)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	err = m.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }

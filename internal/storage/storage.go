@@ -13,10 +13,17 @@ type Storage interface {
 func New(storageType string, dbCfg *config.DBConfig) (Storage, error) {
 	switch storageType {
 	case "postgres":
-		return postgres.New(dbCfg.Username, dbCfg.Password, dbCfg.Address, dbCfg.Database)
+		db, err := postgres.New(dbCfg.Username, dbCfg.Password, dbCfg.Address, dbCfg.Database)
+		if err != nil {
+			return nil, err
+		}
+		if err := db.Migrate(); err != nil {
+			return nil, err
+		}
+		return db, nil
 	case "memory":
-		storage := make(map[string]string, 10)
-		return storage, nil
+		// TODO: improve memory storage
+		panic("unimplemented")
 	}
 
 	return nil, fmt.Errorf("unknown storage type: %s", storageType)
