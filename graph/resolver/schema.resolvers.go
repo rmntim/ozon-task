@@ -13,22 +13,22 @@ import (
 )
 
 // CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, username string, email string) (*model.User, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, username string, email string, password string) (*model.User, error) {
 	panic(fmt.Errorf("not implemented: CreateUser - createUser"))
 }
 
 // CreatePost is the resolver for the createPost field.
-func (r *mutationResolver) CreatePost(ctx context.Context, title string, content string, authorID int) (*model.Post, error) {
+func (r *mutationResolver) CreatePost(ctx context.Context, title string, content string, authorID uint) (*model.Post, error) {
 	panic(fmt.Errorf("not implemented: CreatePost - createPost"))
 }
 
 // CreateComment is the resolver for the createComment field.
-func (r *mutationResolver) CreateComment(ctx context.Context, content string, authorID int, postID int, parentCommentID *int) (*model.Comment, error) {
+func (r *mutationResolver) CreateComment(ctx context.Context, content string, authorID uint, postID uint, parentCommentID *uint) (*model.Comment, error) {
 	panic(fmt.Errorf("not implemented: CreateComment - createComment"))
 }
 
 // User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id int) (*model.User, error) {
+func (r *queryResolver) User(ctx context.Context, id uint) (*model.User, error) {
 	panic(fmt.Errorf("not implemented: User - user"))
 }
 
@@ -38,7 +38,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 }
 
 // Post is the resolver for the post field.
-func (r *queryResolver) Post(ctx context.Context, id int) (*model.Post, error) {
+func (r *queryResolver) Post(ctx context.Context, id uint) (*model.Post, error) {
 	panic(fmt.Errorf("not implemented: Post - post"))
 }
 
@@ -48,7 +48,7 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 }
 
 // Comment is the resolver for the comment field.
-func (r *queryResolver) Comment(ctx context.Context, id int) (*model.Comment, error) {
+func (r *queryResolver) Comment(ctx context.Context, id uint) (*model.Comment, error) {
 	panic(fmt.Errorf("not implemented: Comment - comment"))
 }
 
@@ -63,7 +63,7 @@ func (r *subscriptionResolver) PostAdded(ctx context.Context) (<-chan *model.Pos
 }
 
 // CommentAdded is the resolver for the commentAdded field.
-func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID *int) (<-chan *model.Comment, error) {
+func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID *uint) (<-chan *model.Comment, error) {
 	panic(fmt.Errorf("not implemented: CommentAdded - commentAdded"))
 }
 
