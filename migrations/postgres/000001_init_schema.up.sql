@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS comments
     id                SERIAL PRIMARY KEY,
     author_id         INT         NOT NULL REFERENCES users,
     created_at        TIMESTAMPTZ NOT NULL                      DEFAULT NOW(),
-    likes             INT         NOT NULL                      DEFAULT 0,
     content           TEXT        NOT NULL,
     post_id           INT         NOT NULL REFERENCES posts ON DELETE CASCADE,
     parent_comment_id INT REFERENCES comments ON DELETE CASCADE DEFAULT NULL
