@@ -32,7 +32,13 @@ func (r *mutationResolver) CreatePost(ctx context.Context, post model.PostInput)
 
 // CreateComment is the resolver for the createComment field.
 func (r *mutationResolver) CreateComment(ctx context.Context, postID int, comment model.CommentInput) (*model.Comment, error) {
-	panic(fmt.Errorf("not implemented: CreateComment - createComment"))
+	const op = "resolver.CreateComment"
+	newComment, err := r.db.CreateComment(ctx, postID, comment)
+	if err != nil {
+		r.log.Error("internal server error", slog.String("op", op), sl.Err(err))
+		return nil, ErrInternal
+	}
+	return newComment, nil
 }
 
 // Post is the resolver for the post field.
