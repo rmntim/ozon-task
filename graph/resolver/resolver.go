@@ -15,9 +15,15 @@ type Resolver struct {
 	log *slog.Logger
 }
 
-func New(db storage.Storage, log *slog.Logger) graph.ResolverRoot {
-	return &Resolver{
+func New(db storage.Storage, log *slog.Logger) graph.Config {
+	res := &Resolver{
 		db:  db,
 		log: log,
 	}
+
+	cfg := graph.Config{
+		Resolvers: res,
+	}
+
+	return cfg
 }

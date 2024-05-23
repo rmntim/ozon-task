@@ -31,9 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	gqlHandler := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: resolver.New(db, log),
-	}))
+	gqlHandler := handler.NewDefaultServer(graph.NewExecutableSchema(resolver.New(db, log)))
 
 	mux := http.NewServeMux()
 	mux.Handle("/", playground.Handler("Ozon Task", "/query"))
