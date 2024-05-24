@@ -7,6 +7,7 @@ import (
 	"github.com/rmntim/ozon-task/graph/resolver"
 	"github.com/rmntim/ozon-task/internal/config"
 	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
+	loggerMw "github.com/rmntim/ozon-task/internal/server/middleware/logger"
 	"github.com/rmntim/ozon-task/internal/storage"
 	"log/slog"
 	"net/http"
@@ -37,14 +38,14 @@ func main() {
 	mux.Handle("/", playground.Handler("Ozon Task", "/query"))
 	mux.Handle("/query", gqlHandler)
 
+	handlerWithMw := loggerMw.New(log)(mux)
 	srv := &http.Server{
 		Addr:         cfg.Server.Address,
-		Handler:      mux,
+		Handler:      handlerWithMw,
 		WriteTimeout: cfg.Server.Timeout,
 		ReadTimeout:  cfg.Server.Timeout,
 		IdleTimeout:  cfg.Server.IdleTimeout,
 	}
-
 	if err := srv.ListenAndServe(); err != nil {
 		log.Error("failed to start server", sl.Err(err))
 		os.Exit(1)
