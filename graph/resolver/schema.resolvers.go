@@ -7,6 +7,7 @@ package resolver
 import (
 	"context"
 	"fmt"
+	"github.com/rmntim/ozon-task/internal/lib/random"
 	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
@@ -14,6 +15,8 @@ import (
 	"github.com/rmntim/ozon-task/internal/models"
 	"github.com/rmntim/ozon-task/internal/server"
 )
+
+var postCreatedChannels = make(map[string]chan *models.Post)
 
 // Author is the resolver for the author field.
 func (r *commentResolver) Author(ctx context.Context, obj *models.Comment) (*models.User, error) {
@@ -185,7 +188,16 @@ func (r *queryResolver) Comments(ctx context.Context, limit int, offset int) ([]
 
 // PostAdded is the resolver for the postAdded field.
 func (r *subscriptionResolver) PostAdded(ctx context.Context) (<-chan *models.Post, error) {
-	panic(fmt.Errorf("not implemented: PostAdded - postAdded"))
+	id := random.NewRandomString(8)
+
+	postEvent := make(chan *models.Post, 1)
+	go func() {
+		<-ctx.Done()
+		close(postEvent)
+		delete(postCreatedChannels, id)
+	}()
+	postCreatedChannels[id] = postEvent
+	return postEvent, nil
 }
 
 // CommentAdded is the resolver for the commentAdded field.
