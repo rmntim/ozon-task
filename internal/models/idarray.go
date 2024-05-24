@@ -16,12 +16,12 @@ func (r IDArray) Value() (driver.Value, error) {
 	}
 
 	sb := strings.Builder{}
-	sb.WriteString("[")
+	sb.WriteString("{")
 	for _, id := range r {
 		sb.WriteString(strconv.Itoa(int(id)))
 		sb.WriteString(",")
 	}
-	sb.WriteString("]")
+	sb.WriteString("}")
 	return sb.String(), nil
 }
 
