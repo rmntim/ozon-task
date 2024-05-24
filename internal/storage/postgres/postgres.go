@@ -141,8 +141,14 @@ func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*model
 }
 
 func (s *Storage) GetPostById(ctx context.Context, id uint) (*model.Post, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "storage.postgres.GetPostById"
+
+	var post model.Post
+	if err := s.db.QueryRowxContext(ctx, "SELECT id, title, created_at, content, author_id FROM posts WHERE id = $1", id).StructScan(&post); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &post, nil
 }
 
 func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model.Post, error) {
