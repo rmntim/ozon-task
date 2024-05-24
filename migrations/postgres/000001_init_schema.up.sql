@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS posts
 CREATE TABLE IF NOT EXISTS comments
 (
     id                SERIAL PRIMARY KEY,
-    content           TEXT      NOT NULL,
-    author_id         INTEGER   NOT NULL,
-    created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    post_id           INTEGER   NOT NULL,
+    content           VARCHAR(2000) NOT NULL,
+    author_id         INTEGER       NOT NULL,
+    created_at        TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    post_id           INTEGER       NOT NULL,
     parent_comment_id INTEGER,
     FOREIGN KEY (author_id) REFERENCES users,
     FOREIGN KEY (post_id) REFERENCES posts,
