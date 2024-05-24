@@ -8,4 +8,5 @@ var (
 	ErrPostNotFound     = errors.New("no such post")
 	ErrCommentNotFound  = errors.New("no such comment")
 	ErrCommentsDisabled = errors.New("comments are disabled on this post")
+	ErrUnauthorized     = errors.New("unauthorized")
 )

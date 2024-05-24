@@ -7,6 +7,7 @@ package resolver
 import (
 	"context"
 	"errors"
+	"github.com/rmntim/ozon-task/internal/lib/auth"
 	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
@@ -124,7 +125,11 @@ func (r *mutationResolver) CreateComment(ctx context.Context, content string, au
 // ToggleComments is the resolver for the toggleComments field.
 func (r *mutationResolver) ToggleComments(ctx context.Context, postID uint) (bool, error) {
 	const op = "resolver.ToggleComments"
-	isEnabled, err := r.db.ToggleComments(ctx, postID)
+	user := auth.ForContext(ctx)
+	if user == nil {
+		return false, server.ErrUnauthorized
+	}
+	isEnabled, err := r.db.ToggleComments(ctx, postID, user.ID)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return false, server.ErrInternal

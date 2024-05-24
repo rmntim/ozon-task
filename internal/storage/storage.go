@@ -18,7 +18,7 @@ type Storage interface {
 	GetPosts(ctx context.Context, limit int, offset int) ([]*models.Post, error)
 	GetCommentById(ctx context.Context, id uint) (*models.Comment, error)
 	GetComments(ctx context.Context, limit int, offset int) ([]*models.Comment, error)
-	ToggleComments(ctx context.Context, id uint) (bool, error)
+	ToggleComments(ctx context.Context, postId uint, userId uint) (bool, error)
 	GetPostsFromUser(ctx context.Context, userId uint) ([]*models.Post, error)
 	GetReplies(ctx context.Context, commentId uint) ([]*models.Comment, error)
 	GetCommentsForPost(ctx context.Context, postId uint) ([]*models.Comment, error)

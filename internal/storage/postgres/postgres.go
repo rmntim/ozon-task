@@ -218,11 +218,11 @@ func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*mo
 	return comments, nil
 }
 
-func (s *Storage) ToggleComments(ctx context.Context, postId uint) (bool, error) {
+func (s *Storage) ToggleComments(ctx context.Context, postId uint, userId uint) (bool, error) {
 	const op = "storage.postgres.ToggleComments"
 
 	var commentsAvailable bool
-	stmt, err := s.db.PreparexContext(ctx, `UPDATE posts SET comments_available = NOT comments_available WHERE id = $1 RETURNING comments_available`)
+	stmt, err := s.db.PreparexContext(ctx, `UPDATE posts SET comments_available = NOT comments_available WHERE id = $1 AND author_id = $2 RETURNING comments_available`)
 	if err != nil {
 		return false, fmt.Errorf("%s: %w", op, err)
 	}
