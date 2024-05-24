@@ -100,7 +100,7 @@ func (s *Storage) CreatePost(ctx context.Context, title string, content string, 
 	return s.GetPostById(ctx, id)
 }
 
-func (s *Storage) CreateComment(ctx context.Context, content string, id uint, id2 uint, id3 *uint) (*model.Comment, error) {
+func (s *Storage) CreateComment(ctx context.Context, content string, authorId uint, postId uint, parentCommentId *uint) (*model.Comment, error) {
 	//TODO implement me
 	panic("implement me")
 }
