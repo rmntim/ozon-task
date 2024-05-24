@@ -6,6 +6,7 @@ package resolver
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
@@ -16,7 +17,8 @@ import (
 )
 
 var (
-	ErrInternal = errors.New("internal server error")
+	ErrInternal     = errors.New("internal server error")
+	ErrUserNotFound = errors.New("no such user")
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -57,6 +59,10 @@ func (r *queryResolver) User(ctx context.Context, id uint) (*model.User, error) 
 	const op = "resolver.User"
 	user, err := r.db.GetUserById(ctx, id)
 	if err != nil {
+		// FIXME: dont use sql errors in resolvers, but can't create generic errors in storage, as it causes cyclic imports
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, ErrInternal
 	}
