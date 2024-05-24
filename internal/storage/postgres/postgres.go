@@ -83,8 +83,21 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 }
 
 func (s *Storage) CreatePost(ctx context.Context, title string, content string, authorId uint) (*model.Post, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "storage.postgres.CreatePost"
+
+	stmt, err := s.db.PreparexContext(ctx, "INSERT INTO posts (title, content, author_id) VALUES ($1, $2, $3) RETURNING id")
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer stmt.Close()
+
+	var id uint
+	err = stmt.QueryRow(title, content, authorId).Scan(&id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return s.GetPostById(ctx, id)
 }
 
 func (s *Storage) CreateComment(ctx context.Context, content string, id uint, id2 uint, id3 *uint) (*model.Comment, error) {
