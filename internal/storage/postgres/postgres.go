@@ -10,7 +10,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/rmntim/ozon-task/graph/model"
+	"github.com/rmntim/ozon-task/internal/models"
 	"github.com/rmntim/ozon-task/internal/server"
 )
 
@@ -63,7 +63,7 @@ func (s *Storage) Migrate() error {
 	return nil
 }
 
-func (s *Storage) CreateUser(ctx context.Context, username string, email string, password string) (*model.User, error) {
+func (s *Storage) CreateUser(ctx context.Context, username string, email string, password string) (*models.User, error) {
 	const op = "storage.postgres.CreateUser"
 
 	// FIXME: i dont want to bother with password hashing, lets just imagine it works
@@ -84,7 +84,7 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 	return s.GetUserById(ctx, id)
 }
 
-func (s *Storage) CreatePost(ctx context.Context, title string, content string, authorId uint) (*model.Post, error) {
+func (s *Storage) CreatePost(ctx context.Context, title string, content string, authorId uint) (*models.Post, error) {
 	const op = "storage.postgres.CreatePost"
 
 	stmt, err := s.db.PreparexContext(ctx, "INSERT INTO posts (title, content, author_id) VALUES ($1, $2, $3) RETURNING id")
@@ -102,7 +102,7 @@ func (s *Storage) CreatePost(ctx context.Context, title string, content string, 
 	return s.GetPostById(ctx, id)
 }
 
-func (s *Storage) CreateComment(ctx context.Context, content string, authorId uint, postId uint, parentCommentId *uint) (*model.Comment, error) {
+func (s *Storage) CreateComment(ctx context.Context, content string, authorId uint, postId uint, parentCommentId *uint) (*models.Comment, error) {
 	const op = "storage.postgres.CreateComment"
 
 	stmt, err := s.db.PreparexContext(ctx, "INSERT INTO comments (content, author_id, post_id, parent_comment_id) VALUES ($1, $2, $3, $4) RETURNING id")
@@ -120,10 +120,10 @@ func (s *Storage) CreateComment(ctx context.Context, content string, authorId ui
 	return s.GetCommentById(ctx, id)
 }
 
-func (s *Storage) GetUserById(ctx context.Context, id uint) (*model.User, error) {
+func (s *Storage) GetUserById(ctx context.Context, id uint) (*models.User, error) {
 	const op = "storage.postgres.GetUserById"
 
-	var user model.User
+	var user models.User
 	if err := s.db.QueryRowxContext(ctx, "SELECT id, username, email FROM users WHERE id = $1", id).StructScan(&user); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, server.ErrUserNotFound
@@ -134,10 +134,10 @@ func (s *Storage) GetUserById(ctx context.Context, id uint) (*model.User, error)
 	return &user, nil
 }
 
-func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*model.User, error) {
+func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*models.User, error) {
 	const op = "storage.postgres.GetUsers"
 
-	var users []*model.User
+	var users []*models.User
 	if err := s.db.SelectContext(ctx, &users, "SELECT id, username, email FROM users LIMIT $1 OFFSET $2", limit, offset); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -145,11 +145,11 @@ func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*model
 	return users, nil
 }
 
-func (s *Storage) GetPostById(ctx context.Context, id uint) (*model.Post, error) {
+func (s *Storage) GetPostById(ctx context.Context, id uint) (*models.Post, error) {
 	const op = "storage.postgres.GetPostById"
 
-	var post model.Post
-	post.Author = &model.User{}
+	var post models.Post
+	post.Author = &models.User{}
 	if err := s.db.QueryRowxContext(ctx, "SELECT p.id, title, created_at, content, u.id, username, email FROM posts p JOIN users u ON p.author_id = u.id WHERE p.id = $1", id).
 		Scan(&post.ID, &post.Title, &post.CreatedAt, &post.Content, &post.Author.ID, &post.Author.Username, &post.Author.Email); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -160,10 +160,10 @@ func (s *Storage) GetPostById(ctx context.Context, id uint) (*model.Post, error)
 	return &post, nil
 }
 
-func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model.Post, error) {
+func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*models.Post, error) {
 	const op = "storage.postgres.GetPosts"
 
-	var posts []*model.Post
+	var posts []*models.Post
 	rows, err := s.db.QueryxContext(ctx,
 		"SELECT p.id, title, created_at, content, u.id, username, email FROM posts p JOIN users u ON p.author_id = u.id LIMIT $1 OFFSET $2", limit, offset)
 	if err != nil {
@@ -172,8 +172,8 @@ func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model
 	defer rows.Close()
 
 	for rows.Next() {
-		var post model.Post
-		post.Author = &model.User{}
+		var post models.Post
+		post.Author = &models.User{}
 		if err := rows.Scan(&post.ID, &post.Title, &post.CreatedAt, &post.Content, &post.Author.ID, &post.Author.Username, &post.Author.Email); err != nil {
 			return nil, fmt.Errorf("%s: %w", op, err)
 		}
@@ -183,10 +183,10 @@ func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model
 	return posts, nil
 }
 
-func (s *Storage) GetCommentById(ctx context.Context, id uint) (*model.Comment, error) {
+func (s *Storage) GetCommentById(ctx context.Context, id uint) (*models.Comment, error) {
 	const op = "storage.postgres.GetCommentById"
 
-	var comment model.Comment
+	var comment models.Comment
 	var authorId uint
 	var postId uint
 	var parentCommentId *uint
@@ -218,10 +218,10 @@ func (s *Storage) GetCommentById(ctx context.Context, id uint) (*model.Comment, 
 	return &comment, nil
 }
 
-func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*model.Comment, error) {
+func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*models.Comment, error) {
 	const op = "storage.postgres.GetComments"
 
-	var comments []*model.Comment
+	var comments []*models.Comment
 	var authorIds []uint
 	var postIds []uint
 	var parentCommentIds []*uint
@@ -232,7 +232,7 @@ func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*mo
 	defer rows.Close()
 
 	for rows.Next() {
-		var comment model.Comment
+		var comment models.Comment
 		var authorId uint
 		var postId uint
 		var parentCommentId *uint

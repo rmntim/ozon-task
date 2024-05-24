@@ -7,16 +7,36 @@ package resolver
 import (
 	"context"
 	"fmt"
-	"github.com/rmntim/ozon-task/internal/server"
 	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
-	"github.com/rmntim/ozon-task/graph/model"
 	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
+	"github.com/rmntim/ozon-task/internal/models"
+	"github.com/rmntim/ozon-task/internal/server"
 )
 
+// Author is the resolver for the author field.
+func (r *commentResolver) Author(ctx context.Context, obj *models.Comment) (*models.User, error) {
+	panic(fmt.Errorf("not implemented: Author - author"))
+}
+
+// Post is the resolver for the post field.
+func (r *commentResolver) Post(ctx context.Context, obj *models.Comment) (*models.Post, error) {
+	panic(fmt.Errorf("not implemented: Post - post"))
+}
+
+// ParentComment is the resolver for the parentComment field.
+func (r *commentResolver) ParentComment(ctx context.Context, obj *models.Comment) (*models.Comment, error) {
+	panic(fmt.Errorf("not implemented: ParentComment - parentComment"))
+}
+
+// Replies is the resolver for the replies field.
+func (r *commentResolver) Replies(ctx context.Context, obj *models.Comment) ([]*models.Comment, error) {
+	panic(fmt.Errorf("not implemented: Replies - replies"))
+}
+
 // CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, username string, email string, password string) (*model.User, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, username string, email string, password string) (*models.User, error) {
 	const op = "resolver.CreateUser"
 	newUser, err := r.db.CreateUser(ctx, username, email, password)
 	if err != nil {
@@ -27,7 +47,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, emai
 }
 
 // CreatePost is the resolver for the createPost field.
-func (r *mutationResolver) CreatePost(ctx context.Context, title string, content string, authorID uint) (*model.Post, error) {
+func (r *mutationResolver) CreatePost(ctx context.Context, title string, content string, authorID uint) (*models.Post, error) {
 	const op = "resolver.CreatePost"
 	newPost, err := r.db.CreatePost(ctx, title, content, authorID)
 	if err != nil {
@@ -38,7 +58,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, title string, content
 }
 
 // CreateComment is the resolver for the createComment field.
-func (r *mutationResolver) CreateComment(ctx context.Context, content string, authorID uint, postID uint, parentCommentID *uint) (*model.Comment, error) {
+func (r *mutationResolver) CreateComment(ctx context.Context, content string, authorID uint, postID uint, parentCommentID *uint) (*models.Comment, error) {
 	const op = "resolver.CreateComment"
 	newComment, err := r.db.CreateComment(ctx, content, authorID, postID, parentCommentID)
 	if err != nil {
@@ -48,8 +68,18 @@ func (r *mutationResolver) CreateComment(ctx context.Context, content string, au
 	return newComment, nil
 }
 
+// Author is the resolver for the author field.
+func (r *postResolver) Author(ctx context.Context, obj *models.Post) (*models.User, error) {
+	panic(fmt.Errorf("not implemented: Author - author"))
+}
+
+// Comments is the resolver for the comments field.
+func (r *postResolver) Comments(ctx context.Context, obj *models.Post) ([]*models.Comment, error) {
+	panic(fmt.Errorf("not implemented: Comments - comments"))
+}
+
 // User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id uint) (*model.User, error) {
+func (r *queryResolver) User(ctx context.Context, id uint) (*models.User, error) {
 	const op = "resolver.User"
 	user, err := r.db.GetUserById(ctx, id)
 	if err != nil {
@@ -60,7 +90,7 @@ func (r *queryResolver) User(ctx context.Context, id uint) (*model.User, error) 
 }
 
 // Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*model.User, error) {
+func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*models.User, error) {
 	const op = "resolver.Users"
 	users, err := r.db.GetUsers(ctx, limit, offset)
 	if err != nil {
@@ -71,7 +101,7 @@ func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*mo
 }
 
 // Post is the resolver for the post field.
-func (r *queryResolver) Post(ctx context.Context, id uint) (*model.Post, error) {
+func (r *queryResolver) Post(ctx context.Context, id uint) (*models.Post, error) {
 	const op = "resolver.Post"
 	post, err := r.db.GetPostById(ctx, id)
 	if err != nil {
@@ -82,7 +112,7 @@ func (r *queryResolver) Post(ctx context.Context, id uint) (*model.Post, error) 
 }
 
 // Posts is the resolver for the posts field.
-func (r *queryResolver) Posts(ctx context.Context, limit int, offset int) ([]*model.Post, error) {
+func (r *queryResolver) Posts(ctx context.Context, limit int, offset int) ([]*models.Post, error) {
 	const op = "resolver.Posts"
 	posts, err := r.db.GetPosts(ctx, limit, offset)
 	if err != nil {
@@ -93,7 +123,7 @@ func (r *queryResolver) Posts(ctx context.Context, limit int, offset int) ([]*mo
 }
 
 // Comment is the resolver for the comment field.
-func (r *queryResolver) Comment(ctx context.Context, id uint) (*model.Comment, error) {
+func (r *queryResolver) Comment(ctx context.Context, id uint) (*models.Comment, error) {
 	const op = "resolver.Comment"
 	comment, err := r.db.GetCommentById(ctx, id)
 	if err != nil {
@@ -104,7 +134,7 @@ func (r *queryResolver) Comment(ctx context.Context, id uint) (*model.Comment, e
 }
 
 // Comments is the resolver for the comments field.
-func (r *queryResolver) Comments(ctx context.Context, limit int, offset int) ([]*model.Comment, error) {
+func (r *queryResolver) Comments(ctx context.Context, limit int, offset int) ([]*models.Comment, error) {
 	const op = "resolver.Comments"
 	comments, err := r.db.GetComments(ctx, limit, offset)
 	if err != nil {
@@ -115,17 +145,28 @@ func (r *queryResolver) Comments(ctx context.Context, limit int, offset int) ([]
 }
 
 // PostAdded is the resolver for the postAdded field.
-func (r *subscriptionResolver) PostAdded(ctx context.Context) (<-chan *model.Post, error) {
+func (r *subscriptionResolver) PostAdded(ctx context.Context) (<-chan *models.Post, error) {
 	panic(fmt.Errorf("not implemented: PostAdded - postAdded"))
 }
 
 // CommentAdded is the resolver for the commentAdded field.
-func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID *uint) (<-chan *model.Comment, error) {
+func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID *uint) (<-chan *models.Comment, error) {
 	panic(fmt.Errorf("not implemented: CommentAdded - commentAdded"))
 }
 
+// Posts is the resolver for the posts field.
+func (r *userResolver) Posts(ctx context.Context, obj *models.User) ([]*models.Post, error) {
+	panic(fmt.Errorf("not implemented: Posts - posts"))
+}
+
+// Comment returns graph.CommentResolver implementation.
+func (r *Resolver) Comment() graph.CommentResolver { return &commentResolver{r} }
+
 // Mutation returns graph.MutationResolver implementation.
 func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
+
+// Post returns graph.PostResolver implementation.
+func (r *Resolver) Post() graph.PostResolver { return &postResolver{r} }
 
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
@@ -133,6 +174,12 @@ func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 // Subscription returns graph.SubscriptionResolver implementation.
 func (r *Resolver) Subscription() graph.SubscriptionResolver { return &subscriptionResolver{r} }
 
+// User returns graph.UserResolver implementation.
+func (r *Resolver) User() graph.UserResolver { return &userResolver{r} }
+
+type commentResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
+type postResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }
