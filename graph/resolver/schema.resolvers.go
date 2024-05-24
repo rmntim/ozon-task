@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/rmntim/ozon-task/internal/server"
 	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
@@ -22,7 +23,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, username string, emai
 	newUser, err := r.db.CreateUser(ctx, username, email, password)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return newUser, nil
 }
@@ -33,7 +34,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, title string, content
 	newPost, err := r.db.CreatePost(ctx, title, content, authorID)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return newPost, nil
 }
@@ -44,7 +45,7 @@ func (r *mutationResolver) CreateComment(ctx context.Context, content string, au
 	newComment, err := r.db.CreateComment(ctx, content, authorID, postID, parentCommentID)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return newComment, nil
 }
@@ -56,10 +57,10 @@ func (r *queryResolver) User(ctx context.Context, id uint) (*model.User, error) 
 	if err != nil {
 		// FIXME: dont use sql errors in resolvers, but can't create generic errors in storage, as it causes cyclic imports
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrUserNotFound
+			return nil, server.ErrUserNotFound
 		}
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return user, nil
 }
@@ -70,7 +71,7 @@ func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*mo
 	users, err := r.db.GetUsers(ctx, limit, offset)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return users, nil
 }
@@ -81,7 +82,7 @@ func (r *queryResolver) Post(ctx context.Context, id uint) (*model.Post, error) 
 	post, err := r.db.GetPostById(ctx, id)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return post, nil
 }
@@ -92,7 +93,7 @@ func (r *queryResolver) Posts(ctx context.Context, limit int, offset int) ([]*mo
 	posts, err := r.db.GetPosts(ctx, limit, offset)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return posts, nil
 }
@@ -103,7 +104,7 @@ func (r *queryResolver) Comment(ctx context.Context, id uint) (*model.Comment, e
 	comment, err := r.db.GetCommentById(ctx, id)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return comment, nil
 }
@@ -114,7 +115,7 @@ func (r *queryResolver) Comments(ctx context.Context, limit int, offset int) ([]
 	comments, err := r.db.GetComments(ctx, limit, offset)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
-		return nil, ErrInternal
+		return nil, server.ErrInternal
 	}
 	return comments, nil
 }
@@ -141,14 +142,3 @@ func (r *Resolver) Subscription() graph.SubscriptionResolver { return &subscript
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-var (
-	ErrInternal     = errors.New("internal server error")
-	ErrUserNotFound = errors.New("no such user")
-)
