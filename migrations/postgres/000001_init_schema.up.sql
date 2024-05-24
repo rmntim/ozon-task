@@ -67,6 +67,8 @@ BEGIN
             RAISE EXCEPTION 'Parent comment with ID % does not belong to post with ID %', NEW.parent_comment_id, NEW.post_id;
         END IF;
     END IF;
+
+    RETURN NEW;
 END;
 $check_comment_same_post_as_parent$ LANGUAGE plpgsql;
 
