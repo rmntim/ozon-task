@@ -9,6 +9,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"github.com/rmntim/ozon-task/internal/models"
 	"github.com/rmntim/ozon-task/internal/server"
@@ -152,7 +153,7 @@ func (s *Storage) GetPostById(ctx context.Context, id uint) (*models.Post, error
 	if err := s.db.QueryRowxContext(ctx,
 		`SELECT p.id, p.title, p.created_at, p.content, p.author_id, array_agg(c.id) as comments_ids
 				FROM posts p
-					JOIN comments c ON p.id = c.post_id
+					LEFT JOIN comments c ON p.id = c.post_id
 				WHERE p.id = $1
 				GROUP BY p.id, p.title, p.created_at, p.content, p.author_id`, id).StructScan(&post); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -222,7 +223,7 @@ func (s *Storage) GetCommentsByIds(ctx context.Context, ids []uint) ([]*models.C
 				FROM comments c
 					LEFT JOIN comments r ON r.parent_comment_id = c.id
 				WHERE c.id = ANY($1)
-				GROUP by c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id`, ids); err != nil {
+				GROUP by c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id`, pq.Array(ids)); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -236,11 +237,28 @@ func (s *Storage) GetPostsById(ctx context.Context, ids []uint) ([]*models.Post,
 	if err := s.db.SelectContext(ctx, &posts,
 		`SELECT p.id, p.title, p.created_at, p.content, p.author_id, array_agg(c.id) as comments_ids
 				FROM posts p
-					JOIN comments c ON p.id = c.post_id
+					LEFT JOIN comments c ON p.id = c.post_id
 				WHERE p.id = ANY($1)
-				GROUP by p.id, p.title, p.created_at, p.content, p.author_id`, ids); err != nil {
+				GROUP by p.id, p.title, p.created_at, p.content, p.author_id`, pq.Array(ids)); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	return posts, nil
+}
+
+func (s *Storage) ToggleComments(ctx context.Context, postId uint) (bool, error) {
+	const op = "storage.postgres.ToggleComments"
+
+	var commentsAvailable bool
+	stmt, err := s.db.PreparexContext(ctx, `UPDATE posts SET comments_available = NOT comments_available WHERE id = $1 RETURNING comments_available`)
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+	defer stmt.Close()
+
+	if err := stmt.QueryRow(postId).Scan(&commentsAvailable); err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return commentsAvailable, nil
 }

@@ -46,6 +46,8 @@ type Mutation {
     createPost(title: String!, content: String!, authorId: ID!): Post
     # Create a new comment
     createComment(content: String!, authorId: ID!, postId: ID!, parentCommentId: ID): Comment
+    # Toggle commenting on a post
+    toggleComments(postId: ID!): Boolean!
 }
 
 type Subscription {

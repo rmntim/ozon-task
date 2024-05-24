@@ -117,6 +117,17 @@ func (r *mutationResolver) CreateComment(ctx context.Context, content string, au
 	return newComment, nil
 }
 
+// ToggleComments is the resolver for the toggleComments field.
+func (r *mutationResolver) ToggleComments(ctx context.Context, postID uint) (bool, error) {
+	const op = "resolver.ToggleComments"
+	isEnabled, err := r.db.ToggleComments(ctx, postID)
+	if err != nil {
+		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
+		return false, server.ErrInternal
+	}
+	return isEnabled, nil
+}
+
 // Author is the resolver for the author field.
 func (r *postResolver) Author(ctx context.Context, obj *models.Post) (*models.User, error) {
 	const op = "resolver.Author"
