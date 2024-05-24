@@ -97,12 +97,24 @@ func (r *mutationResolver) CreateComment(ctx context.Context, content string, au
 
 // Author is the resolver for the author field.
 func (r *postResolver) Author(ctx context.Context, obj *models.Post) (*models.User, error) {
-	panic(fmt.Errorf("not implemented: Author - author"))
+	const op = "resolver.Author"
+	user, err := r.db.GetUserById(ctx, obj.AuthorID)
+	if err != nil {
+		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
+		return nil, server.ErrInternal
+	}
+	return user, nil
 }
 
 // Comments is the resolver for the comments field.
 func (r *postResolver) Comments(ctx context.Context, obj *models.Post) ([]*models.Comment, error) {
-	panic(fmt.Errorf("not implemented: Comments - comments"))
+	const op = "resolver.Comments"
+	comments, err := r.db.GetCommentsByIds(ctx, obj.CommentsIDs)
+	if err != nil {
+		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
+		return nil, server.ErrInternal
+	}
+	return comments, nil
 }
 
 // User is the resolver for the user field.
