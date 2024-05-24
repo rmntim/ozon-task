@@ -9,16 +9,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
 	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
 	"github.com/rmntim/ozon-task/graph/model"
-)
-
-var (
-	ErrInternal     = errors.New("internal server error")
-	ErrUserNotFound = errors.New("no such user")
+	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
 )
 
 // CreateUser is the resolver for the createUser field.
@@ -70,9 +65,9 @@ func (r *queryResolver) User(ctx context.Context, id uint) (*model.User, error) 
 }
 
 // Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+func (r *queryResolver) Users(ctx context.Context, limit int, offset int) ([]*model.User, error) {
 	const op = "resolver.Users"
-	users, err := r.db.GetUsers(ctx)
+	users, err := r.db.GetUsers(ctx, limit, offset)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, ErrInternal
@@ -92,9 +87,9 @@ func (r *queryResolver) Post(ctx context.Context, id uint) (*model.Post, error) 
 }
 
 // Posts is the resolver for the posts field.
-func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
+func (r *queryResolver) Posts(ctx context.Context, limit int, offset int) ([]*model.Post, error) {
 	const op = "resolver.Posts"
-	posts, err := r.db.GetPosts(ctx)
+	posts, err := r.db.GetPosts(ctx, limit, offset)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, ErrInternal
@@ -114,9 +109,9 @@ func (r *queryResolver) Comment(ctx context.Context, id uint) (*model.Comment, e
 }
 
 // Comments is the resolver for the comments field.
-func (r *queryResolver) Comments(ctx context.Context) ([]*model.Comment, error) {
+func (r *queryResolver) Comments(ctx context.Context, limit int, offset int) ([]*model.Comment, error) {
 	const op = "resolver.Comments"
-	comments, err := r.db.GetComments(ctx)
+	comments, err := r.db.GetComments(ctx, limit, offset)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, ErrInternal
@@ -146,3 +141,14 @@ func (r *Resolver) Subscription() graph.SubscriptionResolver { return &subscript
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+var (
+	ErrInternal     = errors.New("internal server error")
+	ErrUserNotFound = errors.New("no such user")
+)

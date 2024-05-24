@@ -28,15 +28,15 @@ type Query {
     # Fetch a user by ID
     user(id: ID!): User
     # Fetch all users
-    users: [User!]!
+    users(limit: Int! = 10, offset: Int! = 0): [User!]!
     # Fetch a post by ID
     post(id: ID!): Post
     # Fetch all posts
-    posts: [Post!]!
+    posts(limit: Int! = 10, offset: Int! = 0): [Post!]!
     # Fetch a comment by ID
     comment(id: ID!): Comment
     # Fetch all comments
-    comments: [Comment!]!
+    comments(limit: Int! = 10, offset: Int! = 0): [Comment!]!
 }
 
 type Mutation {

@@ -129,7 +129,7 @@ func (s *Storage) GetUserById(ctx context.Context, id uint) (*model.User, error)
 	return &user, nil
 }
 
-func (s *Storage) GetUsers(ctx context.Context) ([]*model.User, error) {
+func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*model.User, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -139,7 +139,7 @@ func (s *Storage) GetPostById(ctx context.Context, id uint) (*model.Post, error)
 	panic("implement me")
 }
 
-func (s *Storage) GetPosts(ctx context.Context) ([]*model.Post, error) {
+func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model.Post, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -149,7 +149,7 @@ func (s *Storage) GetCommentById(ctx context.Context, id uint) (*model.Comment, 
 	panic("implement me")
 }
 
-func (s *Storage) GetComments(ctx context.Context) ([]*model.Comment, error) {
+func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*model.Comment, error) {
 	//TODO implement me
 	panic("implement me")
 }
