@@ -119,8 +119,14 @@ func (s *Storage) CreateComment(ctx context.Context, content string, authorId ui
 }
 
 func (s *Storage) GetUserById(ctx context.Context, id uint) (*model.User, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "storage.postgres.GetUserById"
+
+	var user model.User
+	if err := s.db.QueryRowxContext(ctx, "SELECT id, username, email FROM users WHERE id = $1", id).StructScan(&user); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &user, nil
 }
 
 func (s *Storage) GetUsers(ctx context.Context) ([]*model.User, error) {
