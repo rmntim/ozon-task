@@ -22,7 +22,7 @@ type Post struct {
 	Title       string    `json:"title"`
 	CreatedAt   time.Time `json:"createdAt"`
 	Content     string    `json:"content"`
-	Author      uint      `json:"-"`
+	AuthorID    uint      `json:"-"`
 	CommentsIDs []uint    `json:"-"`
 }
 
