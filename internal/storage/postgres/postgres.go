@@ -65,3 +65,43 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 	//TODO implement me
 	panic("implement me")
 }
+
+func (s *Storage) CreatePost(ctx context.Context, title string, content string, id uint) (*model.Post, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *Storage) CreateComment(ctx context.Context, content string, id uint, id2 uint, id3 *uint) (*model.Comment, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *Storage) GetUserById(ctx context.Context, id uint) (*model.User, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *Storage) GetUsers(ctx context.Context) ([]*model.User, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *Storage) GetPostById(ctx context.Context, id uint) (*model.Post, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *Storage) GetPosts(ctx context.Context) ([]*model.Post, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *Storage) GetCommentById(ctx context.Context, id uint) (*model.Comment, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (s *Storage) GetComments(ctx context.Context) ([]*model.Comment, error) {
+	//TODO implement me
+	panic("implement me")
+}
