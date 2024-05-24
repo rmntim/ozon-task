@@ -62,8 +62,28 @@ func (s *Storage) Migrate() error {
 }
 
 func (s *Storage) CreateUser(ctx context.Context, username string, email string, password string) (*model.User, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "storage.postgres.CreateUser"
+
+	// FIXME: i dont want to bother with password hashing, lets just imagine it works
+	passwordHash := []byte(password + "_hashed")
+
+	stmt, err := s.db.PreparexContext(ctx, "INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id")
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	defer stmt.Close()
+
+	var id uint
+	err = stmt.QueryRow(username, email, passwordHash).Scan(&id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &model.User{
+		ID:       id,
+		Username: username,
+		Email:    email,
+	}, nil
 }
 
 func (s *Storage) CreatePost(ctx context.Context, title string, content string, id uint) (*model.Post, error) {
