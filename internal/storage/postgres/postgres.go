@@ -149,14 +149,18 @@ func (s *Storage) GetPostById(ctx context.Context, id uint) (*models.Post, error
 	const op = "storage.postgres.GetPostById"
 
 	var post models.Post
-	post.Author = &models.User{}
-	if err := s.db.QueryRowxContext(ctx, "SELECT p.id, title, created_at, content, u.id, username, email FROM posts p JOIN users u ON p.author_id = u.id WHERE p.id = $1", id).
-		Scan(&post.ID, &post.Title, &post.CreatedAt, &post.Content, &post.Author.ID, &post.Author.Username, &post.Author.Email); err != nil {
+	if err := s.db.QueryRowxContext(ctx,
+		`SELECT p.id, p.title, p.created_at, p.content, p.author_id, array_agg(c.id) as comments_ids
+				FROM posts p
+					JOIN comments c ON p.id = c.post_id
+				WHERE p.id = $1
+				GROUP BY p.id, p.title, p.created_at, p.content, p.author_id`, id).StructScan(&post); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, server.ErrPostNotFound
 		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+
 	return &post, nil
 }
 
@@ -164,20 +168,12 @@ func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model
 	const op = "storage.postgres.GetPosts"
 
 	var posts []*models.Post
-	rows, err := s.db.QueryxContext(ctx,
-		"SELECT p.id, title, created_at, content, u.id, username, email FROM posts p JOIN users u ON p.author_id = u.id LIMIT $1 OFFSET $2", limit, offset)
-	if err != nil {
+	if err := s.db.SelectContext(ctx, &posts,
+		`SELECT p.id, p.title, p.created_at, p.content, p.author_id, array_agg(c.id) as comments_ids
+				FROM posts p
+					JOIN comments c ON p.id = c.post_id
+				GROUP by p.id, p.title, p.created_at, p.content, p.author_id LIMIT $1 OFFSET $2`, limit, offset); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var post models.Post
-		post.Author = &models.User{}
-		if err := rows.Scan(&post.ID, &post.Title, &post.CreatedAt, &post.Content, &post.Author.ID, &post.Author.Username, &post.Author.Email); err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
-		}
-		posts = append(posts, &post)
 	}
 
 	return posts, nil
@@ -187,32 +183,16 @@ func (s *Storage) GetCommentById(ctx context.Context, id uint) (*models.Comment,
 	const op = "storage.postgres.GetCommentById"
 
 	var comment models.Comment
-	var authorId uint
-	var postId uint
-	var parentCommentId *uint
-
-	if err := s.db.QueryRowxContext(ctx, "SELECT id, content, author_id, post_id, parent_comment_id FROM comments WHERE id = $1", id).
-		Scan(&comment.ID, &comment.Content, &authorId, &postId, &parentCommentId); err != nil {
+	if err := s.db.QueryRowxContext(ctx,
+		`SELECT c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id, array_agg(r.id) as replies_ids
+				FROM comments c
+					LEFT JOIN comments r ON r.parent_comment_id = c.id
+				WHERE c.id = $1
+				GROUP BY c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id`, id).StructScan(&comment); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, server.ErrCommentNotFound
 		}
 		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	var err error
-	comment.Author, err = s.GetUserById(ctx, authorId)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-	comment.Post, err = s.GetPostById(ctx, postId)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-	if parentCommentId != nil {
-		comment.ParentComment, err = s.GetCommentById(ctx, *parentCommentId)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
-		}
 	}
 
 	return &comment, nil
@@ -222,46 +202,12 @@ func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*mo
 	const op = "storage.postgres.GetComments"
 
 	var comments []*models.Comment
-	var authorIds []uint
-	var postIds []uint
-	var parentCommentIds []*uint
-	rows, err := s.db.QueryxContext(ctx, "SELECT id, content, created_at, author_id, post_id, parent_comment_id FROM comments LIMIT $1 OFFSET $2", limit, offset)
-	if err != nil {
+	if err := s.db.SelectContext(ctx, &comments,
+		`SELECT c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id, array_agg(r.id) as replies_ids
+				FROM comments c
+					LEFT JOIN comments r ON r.parent_comment_id = c.id
+				GROUP by c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id LIMIT $1 OFFSET $2`, limit, offset); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var comment models.Comment
-		var authorId uint
-		var postId uint
-		var parentCommentId *uint
-		if err := rows.Scan(&comment.ID, &comment.Content, &comment.CreatedAt, &authorId, &postId, &parentCommentId); err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
-		}
-
-		comments = append(comments, &comment)
-		authorIds = append(authorIds, authorId)
-		postIds = append(postIds, postId)
-		parentCommentIds = append(parentCommentIds, parentCommentId)
-	}
-
-	// FIXME: n+1 my love
-	for i := 0; i < len(comments); i++ {
-		comments[i].Author, err = s.GetUserById(ctx, authorIds[i])
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
-		}
-		comments[i].Post, err = s.GetPostById(ctx, postIds[i])
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
-		}
-		if parentCommentIds[i] != nil {
-			comments[i].ParentComment, err = s.GetCommentById(ctx, *parentCommentIds[i])
-			if err != nil {
-				return nil, fmt.Errorf("%s: %w", op, err)
-			}
-		}
 	}
 
 	return comments, nil
