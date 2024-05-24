@@ -26,7 +26,13 @@ CREATE TABLE IF NOT EXISTS comments
     parent_comment_id INTEGER,
     FOREIGN KEY (author_id) REFERENCES users,
     FOREIGN KEY (post_id) REFERENCES posts,
-    FOREIGN KEY (parent_comment_id) REFERENCES comments
+    FOREIGN KEY (parent_comment_id) REFERENCES comments,
+    CONSTRAINT parent_comment_in_same_post CHECK (
+        parent_comment_id IS NULL
+            OR post_id = (SELECT post_id
+                          FROM comments
+                          WHERE id = parent_comment_id)
+        )
 );
 
 CREATE INDEX idx_author_id ON posts (author_id);
