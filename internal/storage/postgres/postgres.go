@@ -152,8 +152,14 @@ func (s *Storage) GetPostById(ctx context.Context, id uint) (*model.Post, error)
 }
 
 func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model.Post, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "storage.postgres.GetPosts"
+
+	var posts []*model.Post
+	if err := s.db.SelectContext(ctx, &posts, "SELECT id, title, created_at, content, author_id FROM posts LIMIT $1 OFFSET $2", limit, offset); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return posts, nil
 }
 
 func (s *Storage) GetCommentById(ctx context.Context, id uint) (*model.Comment, error) {
