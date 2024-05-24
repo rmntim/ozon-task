@@ -52,7 +52,7 @@ type Subscription {
     # Subscription for new posts
     postAdded: Post
     # Subscription for new comments
-    commentAdded(postId: ID): Comment
+    commentAdded(postId: ID!): Comment
 }
 
 scalar Timestamp
