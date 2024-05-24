@@ -79,11 +79,7 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return &model.User{
-		ID:       id,
-		Username: username,
-		Email:    email,
-	}, nil
+	return s.GetUserById(ctx, id)
 }
 
 func (s *Storage) CreatePost(ctx context.Context, title string, content string, authorId uint) (*model.Post, error) {
