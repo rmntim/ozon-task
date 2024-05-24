@@ -195,7 +195,13 @@ func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID *uint) (
 
 // Posts is the resolver for the posts field.
 func (r *userResolver) Posts(ctx context.Context, obj *models.User) ([]*models.Post, error) {
-	panic(fmt.Errorf("not implemented: Posts - posts"))
+	const op = "resolver.Posts"
+	posts, err := r.db.GetPostsById(ctx, obj.PostsIDs)
+	if err != nil {
+		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
+		return nil, server.ErrInternal
+	}
+	return posts, nil
 }
 
 // Comment returns graph.CommentResolver implementation.

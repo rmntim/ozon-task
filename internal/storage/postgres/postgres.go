@@ -228,3 +228,19 @@ func (s *Storage) GetCommentsByIds(ctx context.Context, ids []uint) ([]*models.C
 
 	return comments, nil
 }
+
+func (s *Storage) GetPostsById(ctx context.Context, ids []uint) ([]*models.Post, error) {
+	const op = "storage.postgres.GetPostsById"
+
+	var posts []*models.Post
+	if err := s.db.SelectContext(ctx, &posts,
+		`SELECT p.id, p.title, p.created_at, p.content, p.author_id, array_agg(c.id) as comments_ids
+				FROM posts p
+					JOIN comments c ON p.id = c.post_id
+				WHERE p.id = ANY($1)
+				GROUP by p.id, p.title, p.created_at, p.content, p.author_id`, ids); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return posts, nil
+}
