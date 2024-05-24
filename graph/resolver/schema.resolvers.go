@@ -6,8 +6,6 @@ package resolver
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"github.com/rmntim/ozon-task/internal/server"
 	"log/slog"
@@ -55,10 +53,6 @@ func (r *queryResolver) User(ctx context.Context, id uint) (*model.User, error) 
 	const op = "resolver.User"
 	user, err := r.db.GetUserById(ctx, id)
 	if err != nil {
-		// FIXME: dont use sql errors in resolvers, but can't create generic errors in storage, as it causes cyclic imports
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, server.ErrUserNotFound
-		}
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
 	}

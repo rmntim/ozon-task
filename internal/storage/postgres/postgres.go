@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
@@ -10,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/rmntim/ozon-task/graph/model"
+	"github.com/rmntim/ozon-task/internal/server"
 )
 
 type Storage struct {
@@ -123,6 +125,9 @@ func (s *Storage) GetUserById(ctx context.Context, id uint) (*model.User, error)
 
 	var user model.User
 	if err := s.db.QueryRowxContext(ctx, "SELECT id, username, email FROM users WHERE id = $1", id).StructScan(&user); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, server.ErrUserNotFound
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -147,6 +152,9 @@ func (s *Storage) GetPostById(ctx context.Context, id uint) (*model.Post, error)
 	post.Author = &model.User{}
 	if err := s.db.QueryRowxContext(ctx, "SELECT p.id, title, created_at, content, u.id, username, email FROM posts p JOIN users u ON p.author_id = u.id WHERE p.id = $1", id).
 		Scan(&post.ID, &post.Title, &post.CreatedAt, &post.Content, &post.Author.ID, &post.Author.Username, &post.Author.Email); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, server.ErrPostNotFound
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return &post, nil
@@ -185,6 +193,9 @@ func (s *Storage) GetCommentById(ctx context.Context, id uint) (*model.Comment, 
 
 	if err := s.db.QueryRowxContext(ctx, "SELECT id, content, author_id, post_id, parent_comment_id FROM comments WHERE id = $1", id).
 		Scan(&comment.ID, &comment.Content, &authorId, &postId, &parentCommentId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, server.ErrCommentNotFound
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
