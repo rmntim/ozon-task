@@ -91,6 +91,11 @@ func (r *mutationResolver) CreatePost(ctx context.Context, title string, content
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
 	}
+
+	for _, observer := range postCreatedChannels {
+		observer <- newPost
+	}
+
 	return newPost, nil
 }
 
@@ -102,6 +107,13 @@ func (r *mutationResolver) CreateComment(ctx context.Context, content string, au
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
 	}
+
+	for _, observer := range commentAddedChannels {
+		if postID == observer.postID {
+			observer.commentChan <- newComment
+		}
+	}
+
 	return newComment, nil
 }
 
