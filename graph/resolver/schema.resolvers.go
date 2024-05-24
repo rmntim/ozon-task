@@ -17,22 +17,49 @@ import (
 
 // Author is the resolver for the author field.
 func (r *commentResolver) Author(ctx context.Context, obj *models.Comment) (*models.User, error) {
-	panic(fmt.Errorf("not implemented: Author - author"))
+	const op = "resolver.Author"
+	user, err := r.db.GetUserById(ctx, obj.AuthorID)
+	if err != nil {
+		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
+		return nil, server.ErrInternal
+	}
+	return user, nil
 }
 
 // Post is the resolver for the post field.
 func (r *commentResolver) Post(ctx context.Context, obj *models.Comment) (*models.Post, error) {
-	panic(fmt.Errorf("not implemented: Post - post"))
+	const op = "resolver.Post"
+	post, err := r.db.GetPostById(ctx, obj.PostID)
+	if err != nil {
+		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
+		return nil, server.ErrInternal
+	}
+	return post, nil
 }
 
 // ParentComment is the resolver for the parentComment field.
 func (r *commentResolver) ParentComment(ctx context.Context, obj *models.Comment) (*models.Comment, error) {
-	panic(fmt.Errorf("not implemented: ParentComment - parentComment"))
+	const op = "resolver.ParentComment"
+	if obj.ParentCommentID == nil {
+		return nil, nil
+	}
+	parentComment, err := r.db.GetCommentById(ctx, *obj.ParentCommentID)
+	if err != nil {
+		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
+		return nil, server.ErrInternal
+	}
+	return parentComment, nil
 }
 
 // Replies is the resolver for the replies field.
 func (r *commentResolver) Replies(ctx context.Context, obj *models.Comment) ([]*models.Comment, error) {
-	panic(fmt.Errorf("not implemented: Replies - replies"))
+	const op = "resolver.Replies"
+	replies, err := r.db.GetCommentsByIds(ctx, obj.RepliesIDs)
+	if err != nil {
+		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
+		return nil, server.ErrInternal
+	}
+	return replies, nil
 }
 
 // CreateUser is the resolver for the createUser field.
