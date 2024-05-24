@@ -64,7 +64,7 @@ func (r *commentResolver) ParentComment(ctx context.Context, obj *models.Comment
 // Replies is the resolver for the replies field.
 func (r *commentResolver) Replies(ctx context.Context, obj *models.Comment) ([]*models.Comment, error) {
 	const op = "resolver.Replies"
-	replies, err := r.db.GetCommentsByIds(ctx, obj.RepliesIDs)
+	replies, err := r.db.GetReplies(ctx, obj.ID)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
@@ -142,7 +142,7 @@ func (r *postResolver) Author(ctx context.Context, obj *models.Post) (*models.Us
 // Comments is the resolver for the comments field.
 func (r *postResolver) Comments(ctx context.Context, obj *models.Post) ([]*models.Comment, error) {
 	const op = "resolver.Comments"
-	comments, err := r.db.GetCommentsByIds(ctx, obj.CommentsIDs)
+	comments, err := r.db.GetCommentsForPost(ctx, obj.ID)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
@@ -250,7 +250,7 @@ func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID uint) (<
 // Posts is the resolver for the posts field.
 func (r *userResolver) Posts(ctx context.Context, obj *models.User) ([]*models.Post, error) {
 	const op = "resolver.Posts"
-	posts, err := r.db.GetPostsById(ctx, obj.PostsIDs)
+	posts, err := r.db.GetPostsFromUser(ctx, obj.ID)
 	if err != nil {
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal

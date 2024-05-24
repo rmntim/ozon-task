@@ -9,7 +9,6 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
-	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"github.com/rmntim/ozon-task/internal/models"
 	"github.com/rmntim/ozon-task/internal/server"
@@ -172,7 +171,7 @@ func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model
 	if err := s.db.SelectContext(ctx, &posts,
 		`SELECT p.id, p.title, p.created_at, p.content, p.author_id, array_agg(c.id) as comments_ids
 				FROM posts p
-					JOIN comments c ON p.id = c.post_id
+					LEFT JOIN comments c ON p.id = c.post_id
 				GROUP by p.id, p.title, p.created_at, p.content, p.author_id LIMIT $1 OFFSET $2`, limit, offset); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -214,38 +213,6 @@ func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*mo
 	return comments, nil
 }
 
-func (s *Storage) GetCommentsByIds(ctx context.Context, ids []uint) ([]*models.Comment, error) {
-	const op = "storage.postgres.GetCommentsByIds"
-
-	var comments []*models.Comment
-	if err := s.db.SelectContext(ctx, &comments,
-		`SELECT c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id, array_agg(r.id) as replies_ids
-				FROM comments c
-					LEFT JOIN comments r ON r.parent_comment_id = c.id
-				WHERE c.id = ANY($1)
-				GROUP by c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id`, pq.Array(ids)); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return comments, nil
-}
-
-func (s *Storage) GetPostsById(ctx context.Context, ids []uint) ([]*models.Post, error) {
-	const op = "storage.postgres.GetPostsById"
-
-	var posts []*models.Post
-	if err := s.db.SelectContext(ctx, &posts,
-		`SELECT p.id, p.title, p.created_at, p.content, p.author_id, array_agg(c.id) as comments_ids
-				FROM posts p
-					LEFT JOIN comments c ON p.id = c.post_id
-				WHERE p.id = ANY($1)
-				GROUP by p.id, p.title, p.created_at, p.content, p.author_id`, pq.Array(ids)); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return posts, nil
-}
-
 func (s *Storage) ToggleComments(ctx context.Context, postId uint) (bool, error) {
 	const op = "storage.postgres.ToggleComments"
 
@@ -261,4 +228,52 @@ func (s *Storage) ToggleComments(ctx context.Context, postId uint) (bool, error)
 	}
 
 	return commentsAvailable, nil
+}
+
+func (s *Storage) GetPostsFromUser(ctx context.Context, userId uint) ([]*models.Post, error) {
+	const op = "storage.postgres.GetPostsFromUser"
+
+	var posts []*models.Post
+	if err := s.db.SelectContext(ctx, &posts,
+		`SELECT p.id, p.title, p.created_at, p.content, p.author_id, array_agg(c.id) as comments_ids
+				FROM posts p
+					LEFT JOIN comments c ON p.id = c.post_id
+				WHERE p.author_id = $1
+				GROUP BY p.id, p.title, p.created_at, p.content, p.author_id`, userId); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return posts, nil
+}
+
+func (s *Storage) GetReplies(ctx context.Context, commentId uint) ([]*models.Comment, error) {
+	const op = "storage.postgres.GetReplies"
+
+	var comments []*models.Comment
+	if err := s.db.SelectContext(ctx, &comments,
+		`SELECT c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id, array_agg(r.id) as replies_ids
+				FROM comments c
+					LEFT JOIN comments r ON r.parent_comment_id = c.id
+				WHERE c.parent_comment_id = $1
+				GROUP BY c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id`, commentId); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return comments, nil
+}
+
+func (s *Storage) GetCommentsForPost(ctx context.Context, postId uint) ([]*models.Comment, error) {
+	const op = "storage.postgres.GetCommentsForPost"
+
+	var comments []*models.Comment
+	if err := s.db.SelectContext(ctx, &comments,
+		`SELECT c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id, array_agg(r.id) as replies_ids
+				FROM comments c
+					LEFT JOIN comments r ON r.parent_comment_id = c.id
+				WHERE c.post_id = $1
+				GROUP BY c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id`, postId); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return comments, nil
 }
