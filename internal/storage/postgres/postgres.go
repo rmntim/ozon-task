@@ -228,7 +228,7 @@ func (s *Storage) ToggleComments(ctx context.Context, postId uint, userId uint) 
 	}
 	defer stmt.Close()
 
-	if err := stmt.QueryRow(postId).Scan(&commentsAvailable); err != nil {
+	if err := stmt.QueryRow(postId, userId).Scan(&commentsAvailable); err != nil {
 		return false, fmt.Errorf("%s: %w", op, err)
 	}
 
