@@ -89,7 +89,7 @@ type ComplexityRoot struct {
 	}
 
 	Subscription struct {
-		CommentAdded func(childComplexity int, postID *uint) int
+		CommentAdded func(childComplexity int, postID uint) int
 		PostAdded    func(childComplexity int) int
 	}
 
@@ -127,7 +127,7 @@ type QueryResolver interface {
 }
 type SubscriptionResolver interface {
 	PostAdded(ctx context.Context) (<-chan *models.Post, error)
-	CommentAdded(ctx context.Context, postID *uint) (<-chan *models.Comment, error)
+	CommentAdded(ctx context.Context, postID uint) (<-chan *models.Comment, error)
 }
 type UserResolver interface {
 	Posts(ctx context.Context, obj *models.User) ([]*models.Post, error)
@@ -361,7 +361,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Subscription.CommentAdded(childComplexity, args["postId"].(*uint)), true
+		return e.complexity.Subscription.CommentAdded(childComplexity, args["postId"].(uint)), true
 
 	case "Subscription.postAdded":
 		if e.complexity.Subscription.PostAdded == nil {
@@ -781,10 +781,10 @@ func (ec *executionContext) field_Query_users_args(ctx context.Context, rawArgs 
 func (ec *executionContext) field_Subscription_commentAdded_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *uint
+	var arg0 uint
 	if tmp, ok := rawArgs["postId"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
-		arg0, err = ec.unmarshalOID2ᚖuint(ctx, tmp)
+		arg0, err = ec.unmarshalNID2uint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2291,7 +2291,7 @@ func (ec *executionContext) _Subscription_commentAdded(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Subscription().CommentAdded(rctx, fc.Args["postId"].(*uint))
+		return ec.resolvers.Subscription().CommentAdded(rctx, fc.Args["postId"].(uint))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

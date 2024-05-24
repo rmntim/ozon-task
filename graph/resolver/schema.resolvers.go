@@ -6,17 +6,24 @@ package resolver
 
 import (
 	"context"
-	"fmt"
-	"github.com/rmntim/ozon-task/internal/lib/random"
 	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
 	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
+	"github.com/rmntim/ozon-task/internal/lib/random"
 	"github.com/rmntim/ozon-task/internal/models"
 	"github.com/rmntim/ozon-task/internal/server"
 )
 
-var postCreatedChannels = make(map[string]chan *models.Post)
+var (
+	postCreatedChannels  = make(map[string]chan *models.Post)
+	commentAddedChannels = make(map[string]commentWithPost)
+)
+
+type commentWithPost struct {
+	postID      uint
+	commentChan chan *models.Comment
+}
 
 // Author is the resolver for the author field.
 func (r *commentResolver) Author(ctx context.Context, obj *models.Comment) (*models.User, error) {
@@ -201,8 +208,20 @@ func (r *subscriptionResolver) PostAdded(ctx context.Context) (<-chan *models.Po
 }
 
 // CommentAdded is the resolver for the commentAdded field.
-func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID *uint) (<-chan *models.Comment, error) {
-	panic(fmt.Errorf("not implemented: CommentAdded - commentAdded"))
+func (r *subscriptionResolver) CommentAdded(ctx context.Context, postID uint) (<-chan *models.Comment, error) {
+	id := random.NewRandomString(8)
+
+	commentEvent := make(chan *models.Comment, 1)
+	go func() {
+		<-ctx.Done()
+		close(commentEvent)
+		delete(commentAddedChannels, id)
+	}()
+	commentAddedChannels[id] = commentWithPost{
+		postID:      postID,
+		commentChan: commentEvent,
+	}
+	return commentEvent, nil
 }
 
 // Posts is the resolver for the posts field.
