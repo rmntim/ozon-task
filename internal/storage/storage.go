@@ -10,7 +10,7 @@ import (
 
 type Storage interface {
 	CreateUser(ctx context.Context, username string, email string, password string) (*model.User, error)
-	CreatePost(ctx context.Context, title string, content string, id uint) (*model.Post, error)
+	CreatePost(ctx context.Context, title string, content string, authorId uint) (*model.Post, error)
 	CreateComment(ctx context.Context, content string, id uint, id2 uint, id3 *uint) (*model.Comment, error)
 	GetUserById(ctx context.Context, id uint) (*model.User, error)
 	GetUsers(ctx context.Context) ([]*model.User, error)

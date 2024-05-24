@@ -86,7 +86,7 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 	}, nil
 }
 
-func (s *Storage) CreatePost(ctx context.Context, title string, content string, id uint) (*model.Post, error) {
+func (s *Storage) CreatePost(ctx context.Context, title string, content string, authorId uint) (*model.Post, error) {
 	//TODO implement me
 	panic("implement me")
 }
