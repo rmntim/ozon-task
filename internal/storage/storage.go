@@ -18,6 +18,7 @@ type Storage interface {
 	GetPosts(ctx context.Context, limit int, offset int) ([]*models.Post, error)
 	GetCommentById(ctx context.Context, id uint) (*models.Comment, error)
 	GetComments(ctx context.Context, limit int, offset int) ([]*models.Comment, error)
+	GetCommentsByIds(ctx context.Context, ids []uint) ([]*models.Comment, error)
 }
 
 // New creates new storage instance, depending on storage type.

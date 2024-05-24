@@ -212,3 +212,19 @@ func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*mo
 
 	return comments, nil
 }
+
+func (s *Storage) GetCommentsByIds(ctx context.Context, ids []uint) ([]*models.Comment, error) {
+	const op = "storage.postgres.GetCommentsByIds"
+
+	var comments []*models.Comment
+	if err := s.db.SelectContext(ctx, &comments,
+		`SELECT c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id, array_agg(r.id) as replies_ids
+				FROM comments c
+					LEFT JOIN comments r ON r.parent_comment_id = c.id
+				WHERE c.id = ANY($1)
+				GROUP by c.id, c.content, c.created_at, c.author_id, c.post_id, c.parent_comment_id`, ids); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return comments, nil
+}
