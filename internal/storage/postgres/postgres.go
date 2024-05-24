@@ -163,8 +163,14 @@ func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model
 }
 
 func (s *Storage) GetCommentById(ctx context.Context, id uint) (*model.Comment, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "storage.postgres.GetCommentById"
+
+	var comment model.Comment
+	if err := s.db.QueryRowxContext(ctx, "SELECT id, content, author_id, post_id, parent_comment_id FROM comments WHERE id = $1", id).StructScan(&comment); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return &comment, nil
 }
 
 func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*model.Comment, error) {
