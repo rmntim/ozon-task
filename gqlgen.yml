@@ -21,3 +21,12 @@ models:
   Timestamp:
     model:
       - github.com/rmntim/ozon-task/internal/lib/graph/timestamp.Timestamp
+  Comment:
+    model:
+      - github.com/rmntim/ozon-task/internal/models.Comment
+  User:
+    model:
+      - github.com/rmntim/ozon-task/internal/models.User
+  Post:
+    model:
+      - github.com/rmntim/ozon-task/internal/models.Post
