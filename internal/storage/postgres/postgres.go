@@ -9,6 +9,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 	"github.com/rmntim/ozon-task/internal/models"
 	"github.com/rmntim/ozon-task/internal/server"
@@ -114,6 +115,10 @@ func (s *Storage) CreateComment(ctx context.Context, content string, authorId ui
 	var id uint
 	err = stmt.QueryRow(content, authorId, postId, parentCommentId).Scan(&id)
 	if err != nil {
+		var pgErr *pq.Error
+		if errors.As(err, &pgErr) && pgErr.Code == "P0001" {
+			return nil, server.ErrCommentsDisabled
+		}
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 

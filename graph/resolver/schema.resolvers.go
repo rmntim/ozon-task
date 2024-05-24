@@ -6,6 +6,7 @@ package resolver
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
@@ -104,6 +105,9 @@ func (r *mutationResolver) CreateComment(ctx context.Context, content string, au
 	const op = "resolver.CreateComment"
 	newComment, err := r.db.CreateComment(ctx, content, authorID, postID, parentCommentID)
 	if err != nil {
+		if errors.Is(err, server.ErrCommentsDisabled) {
+			return nil, server.ErrCommentsDisabled
+		}
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
 	}
