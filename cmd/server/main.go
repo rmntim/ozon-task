@@ -6,6 +6,7 @@ import (
 	"github.com/rmntim/ozon-task/graph"
 	"github.com/rmntim/ozon-task/graph/resolver"
 	"github.com/rmntim/ozon-task/internal/config"
+	"github.com/rmntim/ozon-task/internal/lib/auth"
 	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
 	loggerMw "github.com/rmntim/ozon-task/internal/server/middleware/logger"
 	"github.com/rmntim/ozon-task/internal/storage"
@@ -38,7 +39,8 @@ func main() {
 	mux.Handle("/", playground.Handler("Ozon Task", "/query"))
 	mux.Handle("/query", gqlHandler)
 
-	handlerWithMw := loggerMw.New(log)(mux)
+	// TODO: maybe switch to go-chi cause it has better mw support
+	handlerWithMw := loggerMw.New(log)(auth.Middleware(db)(mux))
 	srv := &http.Server{
 		Addr:         cfg.Server.Address,
 		Handler:      handlerWithMw,
