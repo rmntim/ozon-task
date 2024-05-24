@@ -130,8 +130,14 @@ func (s *Storage) GetUserById(ctx context.Context, id uint) (*model.User, error)
 }
 
 func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*model.User, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "storage.postgres.GetUsers"
+
+	var users []*model.User
+	if err := s.db.SelectContext(ctx, &users, "SELECT id, username, email FROM users LIMIT $1 OFFSET $2", limit, offset); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return users, nil
 }
 
 func (s *Storage) GetPostById(ctx context.Context, id uint) (*model.Post, error) {
