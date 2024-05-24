@@ -174,6 +174,12 @@ func (s *Storage) GetCommentById(ctx context.Context, id uint) (*model.Comment, 
 }
 
 func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*model.Comment, error) {
-	//TODO implement me
-	panic("implement me")
+	const op = "storage.postgres.GetComments"
+
+	var comments []*model.Comment
+	if err := s.db.SelectContext(ctx, &comments, "SELECT id, content, author_id, post_id, parent_comment_id FROM comments LIMIT $1 OFFSET $2", limit, offset); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return comments, nil
 }
