@@ -309,8 +309,19 @@ func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*mo
 }
 
 func (s *Storage) ToggleComments(ctx context.Context, postId uint, userId uint) (bool, error) {
-	//TODO implement me
-	panic("implement me")
+	post, ok := s.posts.Load(uint64(postId))
+	if !ok {
+		return false, server.ErrPostNotFound
+	}
+
+	if post.authorId != uint64(userId) {
+		return false, server.ErrUnauthorized
+	}
+
+	post.commentsAvailable = !post.commentsAvailable
+	s.posts.Store(uint64(postId), post)
+
+	return true, nil
 }
 
 func (s *Storage) GetPostsFromUser(ctx context.Context, userId uint) ([]*models.Post, error) {
