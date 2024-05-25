@@ -18,12 +18,13 @@ type Mutation struct {
 }
 
 type Post struct {
-	ID          uint      `json:"id"`
-	Title       string    `json:"title"`
-	CreatedAt   time.Time `json:"createdAt" db:"created_at"`
-	Content     string    `json:"content"`
-	AuthorID    uint      `json:"-" db:"author_id"`
-	CommentsIDs IDArray   `json:"-" db:"comments_ids"`
+	ID                uint      `json:"id"`
+	Title             string    `json:"title"`
+	CreatedAt         time.Time `json:"createdAt" db:"created_at"`
+	Content           string    `json:"content"`
+	CommentsAvailable bool      `json:"commentsAvailable" db:"comments_available"`
+	AuthorID          uint      `json:"-" db:"author_id"`
+	CommentsIDs       IDArray   `json:"-" db:"comments_ids"`
 }
 
 type Query struct {

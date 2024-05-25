@@ -7,10 +7,10 @@ package resolver
 import (
 	"context"
 	"errors"
-	"github.com/rmntim/ozon-task/internal/lib/auth"
 	"log/slog"
 
 	"github.com/rmntim/ozon-task/graph"
+	"github.com/rmntim/ozon-task/internal/lib/auth"
 	"github.com/rmntim/ozon-task/internal/lib/logger/sl"
 	"github.com/rmntim/ozon-task/internal/lib/random"
 	"github.com/rmntim/ozon-task/internal/models"
