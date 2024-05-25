@@ -52,8 +52,32 @@ func New() *Storage {
 }
 
 func (s *Storage) CreateUser(ctx context.Context, username string, email string, password string) (*models.User, error) {
-	//TODO implement me
-	panic("implement me")
+	id := s.usersSeq.Load()
+
+	user := &user{
+		id:           id,
+		username:     username,
+		email:        email,
+		passwordHash: []byte(password + "_hashed"), // again, don't care about security here
+	}
+
+	s.users.Store(id, user)
+	s.usersSeq.Add(1)
+
+	postsIds := make([]uint, 0)
+	s.posts.Range(func(id uint64, post *post) bool {
+		if post.authorId == id {
+			postsIds = append(postsIds, uint(post.id))
+		}
+		return true
+	})
+
+	return &models.User{
+		ID:       uint(user.id),
+		Username: user.username,
+		Email:    user.email,
+		PostsIDs: postsIds,
+	}, nil
 }
 
 func (s *Storage) CreatePost(ctx context.Context, title string, content string, authorId uint) (*models.Post, error) {
