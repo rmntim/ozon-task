@@ -353,8 +353,30 @@ func (s *Storage) GetPostsFromUser(ctx context.Context, userId uint) ([]*models.
 }
 
 func (s *Storage) GetReplies(ctx context.Context, commentId uint) ([]*models.Comment, error) {
-	//TODO implement me
-	panic("implement me")
+	replies := make([]*models.Comment, 0)
+	s.comments.Range(func(id uint64, c *Comment) bool {
+		if c.parentCommentId != nil && *c.parentCommentId == commentId {
+			commentsIds := make([]uint, 0)
+			s.comments.Range(func(id uint64, c *Comment) bool {
+				if c.postId == id {
+					commentsIds = append(commentsIds, uint(c.id))
+				}
+				return true
+			})
+			replies = append(replies, &models.Comment{
+				ID:              uint(c.id),
+				Content:         c.content,
+				AuthorID:        uint(c.authorId),
+				CreatedAt:       c.createdAt,
+				PostID:          uint(c.postId),
+				ParentCommentID: c.parentCommentId,
+				RepliesIDs:      commentsIds,
+			})
+		}
+		return true
+	})
+
+	return replies, nil
 }
 
 func (s *Storage) GetCommentsForPost(ctx context.Context, postId uint) ([]*models.Comment, error) {
