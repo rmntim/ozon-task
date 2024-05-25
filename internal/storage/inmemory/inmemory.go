@@ -3,6 +3,7 @@ package inmemory
 import (
 	"context"
 	"github.com/rmntim/ozon-task/internal/models"
+	"github.com/rmntim/ozon-task/internal/server"
 	"sync/atomic"
 	"time"
 )
@@ -148,8 +149,25 @@ func (s *Storage) CreateComment(ctx context.Context, content string, authorId ui
 }
 
 func (s *Storage) GetUserById(ctx context.Context, id uint) (*models.User, error) {
-	//TODO implement me
-	panic("implement me")
+	user, ok := s.users.Load(uint64(id))
+	if !ok {
+		return nil, server.ErrUserNotFound
+	}
+
+	postsIds := make([]uint, 0)
+	s.posts.Range(func(id uint64, p *post) bool {
+		if p.authorId == id {
+			postsIds = append(postsIds, uint(p.id))
+		}
+		return true
+	})
+
+	return &models.User{
+		ID:       uint(user.id),
+		Username: user.username,
+		Email:    user.email,
+		PostsIDs: postsIds,
+	}, nil
 }
 
 func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*models.User, error) {
