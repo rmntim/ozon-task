@@ -164,6 +164,9 @@ func (r *queryResolver) User(ctx context.Context, id uint) (*models.User, error)
 	const op = "resolver.User"
 	user, err := r.db.GetUserById(ctx, id)
 	if err != nil {
+		if errors.Is(err, server.ErrUserNotFound) {
+			return nil, server.ErrUserNotFound
+		}
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
 	}
@@ -186,6 +189,9 @@ func (r *queryResolver) Post(ctx context.Context, id uint) (*models.Post, error)
 	const op = "resolver.Post"
 	post, err := r.db.GetPostById(ctx, id)
 	if err != nil {
+		if errors.Is(err, server.ErrPostNotFound) {
+			return nil, server.ErrPostNotFound
+		}
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
 	}
@@ -208,6 +214,9 @@ func (r *queryResolver) Comment(ctx context.Context, id uint) (*models.Comment, 
 	const op = "resolver.Comment"
 	comment, err := r.db.GetCommentById(ctx, id)
 	if err != nil {
+		if errors.Is(err, server.ErrCommentNotFound) {
+			return nil, server.ErrCommentNotFound
+		}
 		r.log.Error("internal error", slog.String("op", op), sl.Err(err))
 		return nil, server.ErrInternal
 	}
