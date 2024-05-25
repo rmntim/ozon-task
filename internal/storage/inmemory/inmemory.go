@@ -29,7 +29,7 @@ type comment struct {
 	authorId        uint64
 	createdAt       time.Time
 	postId          uint64
-	parentCommentId *uint64
+	parentCommentId *uint
 }
 
 type Storage struct {
@@ -65,9 +65,9 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 	s.usersSeq.Add(1)
 
 	postsIds := make([]uint, 0)
-	s.posts.Range(func(id uint64, post *post) bool {
-		if post.authorId == id {
-			postsIds = append(postsIds, uint(post.id))
+	s.posts.Range(func(id uint64, p *post) bool {
+		if p.authorId == id {
+			postsIds = append(postsIds, uint(p.id))
 		}
 		return true
 	})
@@ -96,9 +96,9 @@ func (s *Storage) CreatePost(ctx context.Context, title string, content string, 
 	s.postsSeq.Add(1)
 
 	commentsIds := make([]uint, 0)
-	s.comments.Range(func(id uint64, comment *comment) bool {
-		if comment.postId == id {
-			commentsIds = append(commentsIds, uint(comment.id))
+	s.comments.Range(func(id uint64, c *comment) bool {
+		if c.postId == id {
+			commentsIds = append(commentsIds, uint(c.id))
 		}
 		return true
 	})
@@ -114,8 +114,37 @@ func (s *Storage) CreatePost(ctx context.Context, title string, content string, 
 }
 
 func (s *Storage) CreateComment(ctx context.Context, content string, authorId uint, postId uint, parentCommentId *uint) (*models.Comment, error) {
-	//TODO implement me
-	panic("implement me")
+	id := s.commentsSeq.Load()
+
+	newComment := &comment{
+		id:              id,
+		content:         content,
+		authorId:        uint64(authorId),
+		createdAt:       time.Now(),
+		postId:          uint64(postId),
+		parentCommentId: parentCommentId,
+	}
+
+	s.comments.Store(id, newComment)
+	s.commentsSeq.Add(1)
+
+	commentsIds := make([]uint, 0)
+	s.comments.Range(func(id uint64, c *comment) bool {
+		if c.postId == id {
+			commentsIds = append(commentsIds, uint(c.id))
+		}
+		return true
+	})
+
+	return &models.Comment{
+		ID:              uint(newComment.id),
+		Content:         newComment.content,
+		AuthorID:        uint(newComment.authorId),
+		CreatedAt:       newComment.createdAt,
+		PostID:          uint(newComment.postId),
+		ParentCommentID: parentCommentId,
+		RepliesIDs:      commentsIds,
+	}, nil
 }
 
 func (s *Storage) GetUserById(ctx context.Context, id uint) (*models.User, error) {
