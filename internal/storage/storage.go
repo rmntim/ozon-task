@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/rmntim/ozon-task/internal/config"
 	"github.com/rmntim/ozon-task/internal/models"
+	"github.com/rmntim/ozon-task/internal/storage/inmemory"
 	"github.com/rmntim/ozon-task/internal/storage/postgres"
 )
 
@@ -37,8 +38,7 @@ func New(storageType string, dbCfg *config.DBConfig) (Storage, error) {
 		}
 		return db, nil
 	case "memory":
-		// TODO: improve memory storage
-		panic("unimplemented")
+		return inmemory.New(), nil
 	}
 	return nil, fmt.Errorf("unknown storage type: %s", storageType)
 }
