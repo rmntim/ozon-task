@@ -8,49 +8,46 @@ import (
 )
 
 type user struct {
-	id           uint
+	id           uint64
 	username     string
 	email        string
 	passwordHash []byte
 }
 
 type post struct {
-	id                uint
+	id                uint64
 	title             string
 	content           string
 	createdAt         time.Time
-	authorId          uint
+	authorId          uint64
 	commentsAvailable bool
 }
 
 type comment struct {
-	id              uint
+	id              uint64
 	content         string
-	authorId        uint
+	authorId        uint64
 	createdAt       time.Time
-	postId          uint
-	parentCommentId *uint
+	postId          uint64
+	parentCommentId *uint64
 }
 
 type Storage struct {
-	users    Map[uint, *user]
+	users    Map[uint64, *user]
 	usersSeq atomic.Uint64
 
-	posts    Map[uint, *post]
+	posts    Map[uint64, *post]
 	postsSeq atomic.Uint64
 
-	comments    Map[uint, *comment]
+	comments    Map[uint64, *comment]
 	commentsSeq atomic.Uint64
 }
 
 func New() *Storage {
 	return &Storage{
-		users:    Map[uint, *models.User]{},
-		posts:    Map[uint, *models.Post]{},
-		comments: Map[uint, *models.Comment]{},
-		users:    Map[uint, *user]{},
-		posts:    Map[uint, *post]{},
-		comments: Map[uint, *comment]{},
+		users:    Map[uint64, *user]{},
+		posts:    Map[uint64, *post]{},
+		comments: Map[uint64, *comment]{},
 	}
 }
 
