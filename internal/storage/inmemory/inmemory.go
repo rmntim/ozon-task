@@ -8,14 +8,14 @@ import (
 	"time"
 )
 
-type user struct {
+type User struct {
 	id           uint64
 	username     string
 	email        string
 	passwordHash []byte
 }
 
-type post struct {
+type Post struct {
 	id                uint64
 	title             string
 	content           string
@@ -24,7 +24,7 @@ type post struct {
 	commentsAvailable bool
 }
 
-type comment struct {
+type Comment struct {
 	id              uint64
 	content         string
 	authorId        uint64
@@ -34,28 +34,28 @@ type comment struct {
 }
 
 type Storage struct {
-	users    Map[uint64, *user]
+	users    Map[uint64, *User]
 	usersSeq atomic.Uint64
 
-	posts    Map[uint64, *post]
+	posts    Map[uint64, *Post]
 	postsSeq atomic.Uint64
 
-	comments    Map[uint64, *comment]
+	comments    Map[uint64, *Comment]
 	commentsSeq atomic.Uint64
 }
 
 func New() *Storage {
 	return &Storage{
-		users:    Map[uint64, *user]{},
-		posts:    Map[uint64, *post]{},
-		comments: Map[uint64, *comment]{},
+		users:    Map[uint64, *User]{},
+		posts:    Map[uint64, *Post]{},
+		comments: Map[uint64, *Comment]{},
 	}
 }
 
 func (s *Storage) CreateUser(ctx context.Context, username string, email string, password string) (*models.User, error) {
 	id := s.usersSeq.Load()
 
-	user := &user{
+	user := &User{
 		id:           id,
 		username:     username,
 		email:        email,
@@ -66,7 +66,7 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 	s.usersSeq.Add(1)
 
 	postsIds := make([]uint, 0)
-	s.posts.Range(func(id uint64, p *post) bool {
+	s.posts.Range(func(id uint64, p *Post) bool {
 		if p.authorId == id {
 			postsIds = append(postsIds, uint(p.id))
 		}
@@ -84,7 +84,7 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 func (s *Storage) CreatePost(ctx context.Context, title string, content string, authorId uint) (*models.Post, error) {
 	id := s.postsSeq.Load()
 
-	post := &post{
+	post := &Post{
 		id:                id,
 		title:             title,
 		content:           content,
@@ -97,7 +97,7 @@ func (s *Storage) CreatePost(ctx context.Context, title string, content string, 
 	s.postsSeq.Add(1)
 
 	commentsIds := make([]uint, 0)
-	s.comments.Range(func(id uint64, c *comment) bool {
+	s.comments.Range(func(id uint64, c *Comment) bool {
 		if c.postId == id {
 			commentsIds = append(commentsIds, uint(c.id))
 		}
@@ -117,7 +117,7 @@ func (s *Storage) CreatePost(ctx context.Context, title string, content string, 
 func (s *Storage) CreateComment(ctx context.Context, content string, authorId uint, postId uint, parentCommentId *uint) (*models.Comment, error) {
 	id := s.commentsSeq.Load()
 
-	newComment := &comment{
+	comment := &Comment{
 		id:              id,
 		content:         content,
 		authorId:        uint64(authorId),
@@ -126,11 +126,11 @@ func (s *Storage) CreateComment(ctx context.Context, content string, authorId ui
 		parentCommentId: parentCommentId,
 	}
 
-	s.comments.Store(id, newComment)
+	s.comments.Store(id, comment)
 	s.commentsSeq.Add(1)
 
 	commentsIds := make([]uint, 0)
-	s.comments.Range(func(id uint64, c *comment) bool {
+	s.comments.Range(func(id uint64, c *Comment) bool {
 		if c.postId == id {
 			commentsIds = append(commentsIds, uint(c.id))
 		}
@@ -138,11 +138,11 @@ func (s *Storage) CreateComment(ctx context.Context, content string, authorId ui
 	})
 
 	return &models.Comment{
-		ID:              uint(newComment.id),
-		Content:         newComment.content,
-		AuthorID:        uint(newComment.authorId),
-		CreatedAt:       newComment.createdAt,
-		PostID:          uint(newComment.postId),
+		ID:              uint(comment.id),
+		Content:         comment.content,
+		AuthorID:        uint(comment.authorId),
+		CreatedAt:       comment.createdAt,
+		PostID:          uint(comment.postId),
 		ParentCommentID: parentCommentId,
 		RepliesIDs:      commentsIds,
 	}, nil
@@ -155,7 +155,7 @@ func (s *Storage) GetUserById(ctx context.Context, id uint) (*models.User, error
 	}
 
 	postsIds := make([]uint, 0)
-	s.posts.Range(func(id uint64, p *post) bool {
+	s.posts.Range(func(id uint64, p *Post) bool {
 		if p.authorId == id {
 			postsIds = append(postsIds, uint(p.id))
 		}
@@ -180,7 +180,7 @@ func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*model
 		}
 
 		postsIds := make([]uint, 0)
-		s.posts.Range(func(id uint64, p *post) bool {
+		s.posts.Range(func(id uint64, p *Post) bool {
 			if p.authorId == id {
 				postsIds = append(postsIds, uint(p.id))
 			}
@@ -205,7 +205,7 @@ func (s *Storage) GetPostById(ctx context.Context, id uint) (*models.Post, error
 	}
 
 	commentsIds := make([]uint, 0)
-	s.comments.Range(func(id uint64, c *comment) bool {
+	s.comments.Range(func(id uint64, c *Comment) bool {
 		if c.postId == id {
 			commentsIds = append(commentsIds, uint(c.id))
 		}
@@ -232,7 +232,7 @@ func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model
 		}
 
 		commentsIds := make([]uint, 0)
-		s.comments.Range(func(id uint64, c *comment) bool {
+		s.comments.Range(func(id uint64, c *Comment) bool {
 			if c.postId == id {
 				commentsIds = append(commentsIds, uint(c.id))
 			}
