@@ -3,16 +3,26 @@ package inmemory
 import (
 	"context"
 	"github.com/rmntim/ozon-task/internal/models"
+	"sync/atomic"
 )
 
 type Storage struct {
-	Users    Map[uint, *models.User]
-	Posts    Map[uint, *models.Post]
-	Comments Map[uint, *models.Comment]
+	users    Map[uint, *models.User]
+	usersSeq atomic.Uint64
+
+	posts    Map[uint, *models.Post]
+	postsSeq atomic.Uint64
+
+	comments    Map[uint, *models.Comment]
+	commentsSeq atomic.Uint64
 }
 
 func New() *Storage {
-	return &Storage{}
+	return &Storage{
+		users:    Map[uint, *models.User]{},
+		posts:    Map[uint, *models.Post]{},
+		comments: Map[uint, *models.Comment]{},
+	}
 }
 
 func (s *Storage) CreateUser(ctx context.Context, username string, email string, password string) (*models.User, error) {
