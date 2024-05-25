@@ -223,8 +223,33 @@ func (s *Storage) GetPostById(ctx context.Context, id uint) (*models.Post, error
 }
 
 func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*models.Post, error) {
-	//TODO implement me
-	panic("implement me")
+	posts := make([]*models.Post, limit)
+
+	for i := 0; i < limit; i++ {
+		post, ok := s.posts.Load(uint64(offset + i))
+		if !ok {
+			break
+		}
+
+		commentsIds := make([]uint, 0)
+		s.comments.Range(func(id uint64, c *comment) bool {
+			if c.postId == id {
+				commentsIds = append(commentsIds, uint(c.id))
+			}
+			return true
+		})
+
+		posts[i] = &models.Post{
+			ID:          uint(post.id),
+			Title:       post.title,
+			CreatedAt:   post.createdAt,
+			Content:     post.content,
+			AuthorID:    uint(post.authorId),
+			CommentsIDs: commentsIds,
+		}
+	}
+
+	return posts, nil
 }
 
 func (s *Storage) GetCommentById(ctx context.Context, id uint) (*models.Comment, error) {
