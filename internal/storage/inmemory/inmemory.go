@@ -171,8 +171,31 @@ func (s *Storage) GetUserById(ctx context.Context, id uint) (*models.User, error
 }
 
 func (s *Storage) GetUsers(ctx context.Context, limit int, offset int) ([]*models.User, error) {
-	//TODO implement me
-	panic("implement me")
+	users := make([]*models.User, limit)
+
+	for i := 0; i < limit; i++ {
+		user, ok := s.users.Load(uint64(offset + i))
+		if !ok {
+			break
+		}
+
+		postsIds := make([]uint, 0)
+		s.posts.Range(func(id uint64, p *post) bool {
+			if p.authorId == id {
+				postsIds = append(postsIds, uint(p.id))
+			}
+			return true
+		})
+
+		users[i] = &models.User{
+			ID:       uint(user.id),
+			Username: user.username,
+			Email:    user.email,
+			PostsIDs: postsIds,
+		}
+	}
+
+	return users, nil
 }
 
 func (s *Storage) GetPostById(ctx context.Context, id uint) (*models.Post, error) {
