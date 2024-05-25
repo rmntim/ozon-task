@@ -93,6 +93,11 @@ func (s *Storage) CreatePost(ctx context.Context, title string, content string, 
 		commentsAvailable: true,
 	}
 
+	_, err := s.GetUserById(ctx, authorId)
+	if err != nil {
+		return nil, err
+	}
+
 	s.posts.Store(id, post)
 	s.postsSeq.Add(1)
 
@@ -124,6 +129,23 @@ func (s *Storage) CreateComment(ctx context.Context, content string, authorId ui
 		createdAt:       time.Now(),
 		postId:          uint64(postId),
 		parentCommentId: parentCommentId,
+	}
+
+	_, err := s.GetUserById(ctx, authorId)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.GetPostById(ctx, postId)
+	if err != nil {
+		return nil, err
+	}
+
+	if parentCommentId != nil {
+		_, err := s.GetCommentById(ctx, *parentCommentId)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	s.comments.Store(id, comment)
