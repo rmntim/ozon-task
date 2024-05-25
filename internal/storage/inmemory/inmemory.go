@@ -4,16 +4,42 @@ import (
 	"context"
 	"github.com/rmntim/ozon-task/internal/models"
 	"sync/atomic"
+	"time"
 )
 
+type user struct {
+	id           uint
+	username     string
+	email        string
+	passwordHash []byte
+}
+
+type post struct {
+	id                uint
+	title             string
+	content           string
+	createdAt         time.Time
+	authorId          uint
+	commentsAvailable bool
+}
+
+type comment struct {
+	id              uint
+	content         string
+	authorId        uint
+	createdAt       time.Time
+	postId          uint
+	parentCommentId *uint
+}
+
 type Storage struct {
-	users    Map[uint, *models.User]
+	users    Map[uint, *user]
 	usersSeq atomic.Uint64
 
-	posts    Map[uint, *models.Post]
+	posts    Map[uint, *post]
 	postsSeq atomic.Uint64
 
-	comments    Map[uint, *models.Comment]
+	comments    Map[uint, *comment]
 	commentsSeq atomic.Uint64
 }
 
@@ -22,6 +48,9 @@ func New() *Storage {
 		users:    Map[uint, *models.User]{},
 		posts:    Map[uint, *models.Post]{},
 		comments: Map[uint, *models.Comment]{},
+		users:    Map[uint, *user]{},
+		posts:    Map[uint, *post]{},
+		comments: Map[uint, *comment]{},
 	}
 }
 
