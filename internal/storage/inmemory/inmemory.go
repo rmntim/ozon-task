@@ -343,7 +343,7 @@ func (s *Storage) ToggleComments(ctx context.Context, postId uint, userId uint) 
 	post.commentsAvailable = !post.commentsAvailable
 	s.posts.Store(uint64(postId), post)
 
-	return true, nil
+	return post.commentsAvailable, nil
 }
 
 func (s *Storage) GetPostsFromUser(ctx context.Context, userId uint) ([]*models.Post, error) {

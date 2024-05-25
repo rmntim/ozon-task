@@ -37,12 +37,12 @@ func TestMap_LoadAndDelete(t *testing.T) {
 
 func TestMap_LoadOrStore(t *testing.T) {
 	m := inmemory.Map[string, int]{}
-	if v, loaded := m.LoadOrStore("1", 2); !loaded || v != 2 {
-		t.Error("key should be loaded or stored")
+	if _, loaded := m.LoadOrStore("1", 2); loaded {
+		t.Error("key should not be loaded")
 	}
 
-	if v, loaded := m.LoadOrStore("1", 3); loaded || v != 2 {
-		t.Error("key should not be loaded or stored")
+	if v, loaded := m.LoadOrStore("1", 3); !loaded || v != 2 {
+		t.Error("key should be loaded")
 	}
 }
 

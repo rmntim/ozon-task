@@ -38,12 +38,12 @@ func TestStorage_CreateComment(t *testing.T) {
 		t.Error("comment content should be 'test'")
 	}
 
-	if comment.AuthorID != 1 {
-		t.Error("comment author id should be 1")
+	if comment.AuthorID != 0 {
+		t.Error("comment author id should be 0")
 	}
 
-	if comment.PostID != 1 {
-		t.Error("comment post id should be 1")
+	if comment.PostID != 0 {
+		t.Error("comment post id should be 0")
 	}
 
 	if comment.ParentCommentID != nil {
@@ -110,8 +110,8 @@ func TestStorage_CreatePost(t *testing.T) {
 		t.Error("post content should be 'test'")
 	}
 
-	if post.AuthorID != 1 {
-		t.Error("post author id should be 1")
+	if post.AuthorID != 0 {
+		t.Error("post author id should be 0")
 	}
 }
 
@@ -287,7 +287,7 @@ func TestStorage_GetPostsFromUser(t *testing.T) {
 		t.Error("user should be created")
 	}
 
-	post, err := s.CreatePost(ctx, "test", "test", 1)
+	post, err := s.CreatePost(ctx, "test", "test", user.ID)
 	if err != nil {
 		t.Error("post should be created")
 	}
@@ -325,7 +325,12 @@ func TestStorage_GetReplies(t *testing.T) {
 		t.Error("comment should be created")
 	}
 
-	replies, err := s.GetReplies(ctx, post.ID)
+	reply, err := s.CreateComment(ctx, "test", user.ID, post.ID, &comment.ID)
+	if err != nil {
+		t.Error("reply should be created")
+	}
+
+	replies, err := s.GetReplies(ctx, comment.ID)
 	if err != nil {
 		t.Error("replies should be found")
 	}
@@ -334,7 +339,7 @@ func TestStorage_GetReplies(t *testing.T) {
 		t.Error("replies should not be empty")
 	}
 
-	if !reflect.DeepEqual(replies[0], comment) {
+	if !reflect.DeepEqual(replies[0], reply) {
 		t.Error("replies should be equal")
 	}
 }
