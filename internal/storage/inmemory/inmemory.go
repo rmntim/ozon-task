@@ -253,8 +253,28 @@ func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model
 }
 
 func (s *Storage) GetCommentById(ctx context.Context, id uint) (*models.Comment, error) {
-	//TODO implement me
-	panic("implement me")
+	comm, ok := s.comments.Load(uint64(id))
+	if !ok {
+		return nil, server.ErrCommentNotFound
+	}
+
+	commentsIds := make([]uint, 0)
+	s.comments.Range(func(id uint64, c *Comment) bool {
+		if c.postId == id {
+			commentsIds = append(commentsIds, uint(c.id))
+		}
+		return true
+	})
+
+	return &models.Comment{
+		ID:              uint(comm.id),
+		Content:         comm.content,
+		AuthorID:        uint(comm.authorId),
+		CreatedAt:       comm.createdAt,
+		PostID:          uint(comm.postId),
+		ParentCommentID: comm.parentCommentId,
+		RepliesIDs:      commentsIds,
+	}, nil
 }
 
 func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*models.Comment, error) {
