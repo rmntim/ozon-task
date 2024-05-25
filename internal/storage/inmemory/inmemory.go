@@ -81,8 +81,36 @@ func (s *Storage) CreateUser(ctx context.Context, username string, email string,
 }
 
 func (s *Storage) CreatePost(ctx context.Context, title string, content string, authorId uint) (*models.Post, error) {
-	//TODO implement me
-	panic("implement me")
+	id := s.postsSeq.Load()
+
+	post := &post{
+		id:                id,
+		title:             title,
+		content:           content,
+		createdAt:         time.Now(),
+		authorId:          uint64(authorId),
+		commentsAvailable: true,
+	}
+
+	s.posts.Store(id, post)
+	s.postsSeq.Add(1)
+
+	commentsIds := make([]uint, 0)
+	s.comments.Range(func(id uint64, comment *comment) bool {
+		if comment.postId == id {
+			commentsIds = append(commentsIds, uint(comment.id))
+		}
+		return true
+	})
+
+	return &models.Post{
+		ID:          uint(post.id),
+		Title:       post.title,
+		CreatedAt:   post.createdAt,
+		Content:     post.content,
+		AuthorID:    uint(post.authorId),
+		CommentsIDs: commentsIds,
+	}, nil
 }
 
 func (s *Storage) CreateComment(ctx context.Context, content string, authorId uint, postId uint, parentCommentId *uint) (*models.Comment, error) {
