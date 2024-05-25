@@ -253,7 +253,7 @@ func (s *Storage) GetPosts(ctx context.Context, limit int, offset int) ([]*model
 }
 
 func (s *Storage) GetCommentById(ctx context.Context, id uint) (*models.Comment, error) {
-	comm, ok := s.comments.Load(uint64(id))
+	comment, ok := s.comments.Load(uint64(id))
 	if !ok {
 		return nil, server.ErrCommentNotFound
 	}
@@ -267,19 +267,45 @@ func (s *Storage) GetCommentById(ctx context.Context, id uint) (*models.Comment,
 	})
 
 	return &models.Comment{
-		ID:              uint(comm.id),
-		Content:         comm.content,
-		AuthorID:        uint(comm.authorId),
-		CreatedAt:       comm.createdAt,
-		PostID:          uint(comm.postId),
-		ParentCommentID: comm.parentCommentId,
+		ID:              uint(comment.id),
+		Content:         comment.content,
+		AuthorID:        uint(comment.authorId),
+		CreatedAt:       comment.createdAt,
+		PostID:          uint(comment.postId),
+		ParentCommentID: comment.parentCommentId,
 		RepliesIDs:      commentsIds,
 	}, nil
 }
 
 func (s *Storage) GetComments(ctx context.Context, limit int, offset int) ([]*models.Comment, error) {
-	//TODO implement me
-	panic("implement me")
+	comments := make([]*models.Comment, limit)
+
+	for i := 0; i < limit; i++ {
+		comment, ok := s.comments.Load(uint64(offset + i))
+		if !ok {
+			break
+		}
+
+		commentsIds := make([]uint, 0)
+		s.comments.Range(func(id uint64, c *Comment) bool {
+			if c.postId == id {
+				commentsIds = append(commentsIds, uint(c.id))
+			}
+			return true
+		})
+
+		comments[i] = &models.Comment{
+			ID:              uint(comment.id),
+			Content:         comment.content,
+			AuthorID:        uint(comment.authorId),
+			CreatedAt:       comment.createdAt,
+			PostID:          uint(comment.postId),
+			ParentCommentID: comment.parentCommentId,
+			RepliesIDs:      commentsIds,
+		}
+	}
+
+	return comments, nil
 }
 
 func (s *Storage) ToggleComments(ctx context.Context, postId uint, userId uint) (bool, error) {
