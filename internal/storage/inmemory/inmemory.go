@@ -325,8 +325,31 @@ func (s *Storage) ToggleComments(ctx context.Context, postId uint, userId uint) 
 }
 
 func (s *Storage) GetPostsFromUser(ctx context.Context, userId uint) ([]*models.Post, error) {
-	//TODO implement me
-	panic("implement me")
+	posts := make([]*models.Post, 0)
+
+	s.posts.Range(func(id uint64, p *Post) bool {
+		if p.authorId == uint64(userId) {
+			commentsIds := make([]uint, 0)
+			s.comments.Range(func(id uint64, c *Comment) bool {
+				if c.postId == id {
+					commentsIds = append(commentsIds, uint(c.id))
+				}
+				return true
+			})
+
+			posts = append(posts, &models.Post{
+				ID:          uint(p.id),
+				Title:       p.title,
+				CreatedAt:   p.createdAt,
+				Content:     p.content,
+				AuthorID:    uint(p.authorId),
+				CommentsIDs: commentsIds,
+			})
+		}
+		return true
+	})
+
+	return posts, nil
 }
 
 func (s *Storage) GetReplies(ctx context.Context, commentId uint) ([]*models.Comment, error) {
